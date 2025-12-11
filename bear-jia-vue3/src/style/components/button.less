@@ -1,0 +1,65 @@
+@import '../theme.less';
+
+// 按钮基础样式
+.ant-btn {
+  transition: all 0.3s;
+  margin-right: 8px;
+}
+
+// 主要按钮样式
+.ant-btn-primary {
+  color: var(--btn-primary-color);
+  background-color: var(--btn-primary-bg);
+
+
+  &:active {
+    color: var(--btn-primary-color);
+    background-color: var(--btn-active-bg);
+    border-color: var(--btn-active-bg);
+  }
+}
+
+// 暗色主题下的按钮样式
+.dark-theme {
+  .ant-btn:not(.ant-btn-primary) {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: #434343;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-btn-primary {
+    color: #fff;
+    background-color: var(--primary-color);
+  }
+}
+
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  background-color: #e6f4ff;
+  color: #1677ff;
+}
+
+.edit-btn {
+  background-color: #fff7e6;
+  color: #fa8c16;
+}
+
+.delete-btn {
+  background-color: #fff1f0;
+  color: #ff4d4f;
+}
+
+/* 新增按钮样式（可选） */
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}

@@ -1,0 +1,148 @@
+// 主题相关的全局变量
+:root {
+  // === Ant Design 基础变量 ===
+  --ant-primary-color: #1677ff;
+  --ant-primary-color-hover: color-mix(in srgb, var(--ant-primary-color) 90%, white);
+  --ant-primary-color-active: color-mix(in srgb, var(--ant-primary-color) 110%, black);
+  --ant-primary-1: color-mix(in srgb, var(--ant-primary-color) 20%, white);
+  
+  // === 主题色系统 ===
+  --primary-color: var(--ant-primary-color);
+  --primary-color-hover: var(--ant-primary-color-hover);
+  --primary-color-active: var(--ant-primary-color-active);
+  --primary-1: var(--ant-primary-1);
+  
+  // === 背景色层次系统 ===
+  // Level 1: 页面主背景色（最深层）
+  --bg-color: #f0f2f5;
+  // Level 2: 组件背景色（中间层）
+  --component-background: #fff;
+  // Level 3: 侧边栏专用背景色（特殊用途）
+  --sidebar-background: #fff;
+  
+  // === 专用组件背景色 ===
+  --drawer-bg: #fff;
+  --modal-bg: #fff;
+  --dropdown-bg: #fff;
+  --input-bg: #fff;
+  --list-bg: #fff;
+  --card-bg: #fff;
+  --table-header-bg: #fafafa;
+  
+  // === 交互状态颜色 ===
+  --hover-bg: rgba(0, 0, 0, 0.04);
+  --active-bg: rgba(0, 0, 0, 0.06);
+  --selected-bg: var(--primary-1);
+  
+  // === 文字颜色系统（统一定义，避免重复）===
+  --text-primary: rgba(0, 0, 0, 0.85);  // 主要文字
+  --text-secondary: rgba(0, 0, 0, 0.65); // 次要文字
+  --text-disabled: rgba(0, 0, 0, 0.25);  // 禁用文字
+  // 兼容性别名（保持向后兼容）
+  --text-color: var(--text-primary);
+  --text-color-secondary: var(--text-secondary);
+  
+  // === 边框颜色系统 ===
+  --border-color: #f0f0f0;
+  --border-color-base: #d9d9d9;
+  --border-color-split: #f0f0f0;
+  --drawer-border: #f0f0f0;
+  --modal-border: #f0f0f0;
+  --divider-color: #f0f0f0;
+  
+  // === 菜单颜色系统 ===
+  --menu-bg: var(--menu-bg-light);
+  --menu-bg-light: #fff;
+  --menu-bg-dark: #1f1f1f;
+  --menu-item-color: var(--menu-item-color-light);
+  --menu-item-color-light: var(--text-primary);
+  --menu-item-color-dark: rgba(255, 255, 255, 0.85);
+  --menu-item-hover-color: var(--menu-item-hover-color-light);
+  --menu-item-hover-color-light: var(--primary-color);
+  --menu-item-hover-color-dark: #fff;
+  --menu-item-active-color: var(--menu-item-active-color-light);
+  --menu-item-active-color-light: var(--primary-color);
+  --menu-item-active-color-dark: #fff;
+  --menu-item-active-bg: var(--menu-item-active-bg-light);
+  --menu-item-active-bg-light: var(--primary-1);
+  --menu-item-active-bg-dark: var(--primary-color);
+  
+  // === 按钮颜色系统 ===
+  --btn-primary-bg: var(--primary-color);
+  --btn-primary-color: #fff;
+  --btn-hover-bg: var(--primary-color-hover);
+  --btn-active-bg: var(--primary-color-active);
+}
+
+// === 暗色主题 ===
+.dark-theme {
+  // Level 1: 页面主背景 - 最深的底色
+  --bg-color: #1f1f1f;
+  // Level 2: 组件背景 - 中间层，用于卡片、表格等
+  --component-background: #1f1f1f;
+  // Level 3: 侧边栏专用背景 - 稍浅，增强区分度
+  --sidebar-background: #262626;
+  
+  // === 专用组件背景色（层次化设计）===
+  --drawer-bg: #262626;        // 抽屉背景，与侧边栏同级
+  --modal-bg: #262626;         // 模态框背景
+  --dropdown-bg: #262626;      // 下拉菜单背景
+  --input-bg: #1f1f1f;         // 输入框背景，与组件背景同级
+  --list-bg: #1f1f1f;          // 列表背景
+  --card-bg: #1f1f1f;          // 卡片背景
+  --table-header-bg: #262626;  // 表格头背景，稍浅于表格体
+  
+  // === 交互状态颜色（暗色适配）===
+  --hover-bg: rgba(255, 255, 255, 0.08);
+  --active-bg: rgba(255, 255, 255, 0.12);
+  --selected-bg: var(--primary-color);
+  
+  // === 文字颜色系统（暗色适配）===
+  --text-primary: rgba(255, 255, 255, 0.85);
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-disabled: rgba(255, 255, 255, 0.25);
+  // 兼容性别名更新
+  --text-color: var(--text-primary);
+  --text-color-secondary: var(--text-secondary);
+  
+  // === 边框颜色系统（暗色适配）===
+  --border-color: #434343;
+  --border-color-base: #434343;
+  --border-color-split: #303030;
+  --drawer-border: #434343;
+  --modal-border: #434343;
+  --divider-color: #303030;
+  
+  // === 菜单暗色主题 ===
+  --menu-bg: var(--menu-bg-dark);
+  --menu-item-color: var(--menu-item-color-dark);
+  --menu-item-hover-color: var(--menu-item-hover-color-dark);
+  --menu-item-active-color: var(--menu-item-active-color-dark);
+  --menu-item-active-bg: var(--menu-item-active-bg-dark);
+  
+  // === 按钮暗色主题 ===
+  --btn-primary-color: #fff;
+}
+
+// 主题切换动画
+.theme-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* 色弱模式样式 */
+.color-weak {
+  filter: invert(80%);
+
+  .ant-layout-header,
+  .ant-layout-footer,
+  .ant-layout-sider {
+    filter: invert(100%);
+  }
+
+  // 确保图片和图标不被过度处理
+  img,
+  .anticon,
+  .ant-avatar {
+    filter: invert(100%);
+  }
+}

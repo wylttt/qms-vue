@@ -1,0 +1,945 @@
+// 引入主题和组件样式
+@import './theme.less';
+@import './mixins.less';  // 引入公共mixins
+@import './layout-modes.less';
+@import './components/menu.less';
+@import './components/button.less';
+@import './components/function-components.less';
+@import './components/table.less';  // 表格组件样式
+@import './components/form.less';   // 表单组件样式
+
+// 暗色主题全局样式 (原 dark-theme.less 内容)
+.dark-theme {
+  // 基础背景色
+  body,
+  .ant-layout,
+  .ant-layout-header,
+  .ant-layout-sider,
+  .ant-layout-content,
+  .ant-layout-footer {
+    background-color: var(--bg-color) !important;
+  }
+
+  // 页面容器和内容区域
+  .page-container,
+  .content-wrapper,
+  .layout-container,
+  .app-container {
+    background-color: var(--bg-color) !important;
+  }
+
+  // 确保所有主要容器都使用正确的背景
+  .ant-app,
+  #app {
+    background-color: var(--bg-color) !important;
+  }
+
+  // === 组件背景色统一设置 ===
+  .ant-card,
+  .ant-table,
+  .ant-menu,
+  .ant-tabs-content,
+  .ant-tabs-nav,
+  .ant-collapse-content,
+  .ant-collapse-header {
+    background-color: var(--component-background) !important;
+  }
+
+  // === 专用组件背景色 ===
+  // 抽屉组件
+  .ant-drawer-content,
+  .ant-drawer-header {
+    background-color: var(--drawer-bg) !important;
+    border-color: var(--drawer-border) !important;
+  }
+
+  // 模态框组件
+  .ant-modal-content,
+  .ant-modal-header {
+    background-color: var(--modal-bg) !important;
+    border-color: var(--modal-border) !important;
+  }
+
+  // 下拉菜单组件
+  .ant-dropdown-menu,
+  .ant-select-dropdown,
+  .ant-popover-inner,
+  .ant-tooltip-inner {
+    background-color: var(--dropdown-bg) !important;
+  }
+
+  // === 边框颜色统一设置 ===
+  .ant-card,
+  .ant-table,
+  .ant-input,
+  .ant-select-selector,
+  .ant-picker,
+  .ant-btn:not(.ant-btn-primary),
+  .ant-tabs-tab,
+  .ant-tabs-nav::before,
+  .ant-collapse-header,
+  .ant-collapse-content,
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    border-color: var(--border-color-base) !important;
+  }
+
+  // === 文本颜色统一设置 ===
+  // 排除主要按钮和链接样式，保持其原有颜色
+  *:not(.ant-btn-primary):not(.ant-btn-link):not(.ant-btn-text):not(a):not(.anticon) {
+    color: var(--text-color) !important;
+  }
+
+
+
+  // 下拉菜单和选择器
+  .ant-select-dropdown,
+  .ant-dropdown-menu {
+    background-color: var(--component-background) !important;
+
+    .ant-select-item,
+    .ant-dropdown-menu-item {
+      color: var(--text-color) !important;
+
+      &-selected {
+        background-color: var(--primary-color) !important;
+        color: #fff !important;
+      }
+    }
+  }
+
+  // 开关组件
+  .ant-switch {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+
+    &-checked {
+      background-color: var(--primary-color) !important;
+    }
+  }
+
+  // 分割线
+  .ant-divider {
+    border-top-color: var(--border-color-split) !important;
+
+    &-vertical {
+      border-left-color: var(--border-color-split) !important;
+    }
+  }
+
+  // Tree 组件样式
+  .ant-tree {
+    background: var(--component-background) !important;
+    color: var(--text-primary) !important;
+
+    .ant-tree-node-content-wrapper {
+      color: var(--text-primary) !important;
+      
+      &:hover {
+        background-color: rgba(24, 144, 255, 0.1) !important;
+      }
+      
+      &.ant-tree-node-selected {
+        background-color: var(--primary-color) !important;
+        color: #fff !important;
+      }
+    }
+
+    .ant-tree-treenode {
+      color: var(--text-primary) !important;
+    }
+
+    .ant-tree-switcher {
+      color: var(--text-secondary) !important;
+    }
+
+    .ant-tree-title {
+      color: inherit !important;
+    }
+  }
+
+  // TreeSelect 组件样式
+  .ant-tree-select {
+    .ant-select-selection-item {
+      color: var(--text-primary) !important;
+    }
+    
+    .ant-tree-select-dropdown {
+      background: var(--component-background) !important;
+      
+      .ant-tree {
+        background: transparent !important;
+      }
+    }
+  }
+
+
+
+
+
+
+
+  // 通知和提示框样式
+  .ant-notification {
+    .ant-notification-notice {
+      background: var(--component-background) !important;
+      border: 1px solid var(--border-color-base) !important;
+      
+      .ant-notification-notice-message {
+        color: var(--text-primary) !important;
+      }
+      
+      .ant-notification-notice-description {
+        color: var(--text-secondary) !important;
+      }
+      
+      .ant-notification-notice-close {
+        color: var(--text-secondary) !important;
+        
+        &:hover {
+          color: var(--text-primary) !important;
+        }
+      }
+    }
+  }
+
+  .ant-message {
+    .ant-message-notice {
+      .ant-message-notice-content {
+        background: var(--component-background) !important;
+        border: 1px solid var(--border-color-base) !important;
+        color: var(--text-primary) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      }
+    }
+  }
+
+  .ant-btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  // 设置抽屉特殊样式
+  .theme-setting-drawer {
+    .ant-drawer-content {
+      background-color: var(--drawer-bg) !important;
+    }
+
+    .ant-drawer-header {
+      background-color: var(--drawer-bg) !important;
+      border-bottom-color: var(--drawer-border) !important;
+    }
+
+    .ant-drawer-title {
+      color: var(--text-primary) !important;
+    }
+
+    .ant-drawer-body {
+      color: var(--text-primary) !important;
+    }
+
+    .setting-drawer-block h3 {
+      color: var(--text-primary) !important;
+    }
+
+    .ant-list-item {
+      color: var(--text-primary) !important;
+    }
+  }
+
+
+
+  // 标签页组件
+  .ant-tabs {
+    .ant-tabs-nav {
+      background-color: var(--component-background) !important;
+    }
+    
+    .ant-tabs-tab {
+      color: var(--text-secondary) !important;
+      
+      &-active {
+        color: var(--primary-color) !important;
+      }
+    }
+    
+    .ant-tabs-content-holder {
+      background-color: var(--component-background) !important;
+    }
+  }
+
+  // 面包屑组件
+  .ant-breadcrumb {
+    .ant-breadcrumb-link,
+    .ant-breadcrumb-separator {
+      color: var(--text-secondary) !important;
+    }
+  }
+
+  // 步骤条组件
+  .ant-steps {
+    .ant-steps-item-title {
+      color: var(--text-primary) !important;
+    }
+    
+    .ant-steps-item-description {
+      color: var(--text-secondary) !important;
+    }
+  }
+
+  // 警告框组件
+  .ant-alert {
+    background-color: var(--component-background) !important;
+    border-color: var(--border-color-base) !important;
+    
+    .ant-alert-message,
+    .ant-alert-description {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // 标签组件
+  .ant-tag {
+    background-color: var(--component-background) !important;
+    border-color: var(--border-color-base) !important;
+    color: var(--text-primary) !important;
+  }
+
+  // 时间选择器
+  .ant-picker-panel {
+    background-color: var(--dropdown-bg) !important;
+    border-color: var(--border-color-base) !important;
+    
+    .ant-picker-cell {
+      color: var(--text-primary) !important;
+      
+      &:hover {
+        background-color: rgba(24, 144, 255, 0.1) !important;
+      }
+    }
+    
+    .ant-picker-cell-selected {
+      background-color: var(--primary-color) !important;
+      color: #fff !important;
+    }
+  }
+}
+
+// 全局样式覆盖
+.ant-layout {
+  background: var(--bg-color);
+}
+
+.ant-card {
+  background: var(--component-background);
+  color: var(--text-color);
+}
+
+.ant-card .ant-card-body {
+  padding: 16px !important;
+  border-radius: 6px;
+}
+
+.ant-table {
+  background: var(--component-background);
+  color: var(--text-color);
+  border-radius: 8px;
+}
+
+.ant-modal-content {
+  background: var(--component-background);
+}
+
+.ant-modal-header {
+  background: var(--component-background);
+  border-bottom-color: var(--border-color-split);
+}
+
+.ant-modal-title {
+  color: var(--text-color);
+}
+
+.ant-modal-footer {
+  border-top-color: var(--border-color-split);
+}
+
+.ant-form-item-label > label {
+  color: var(--text-color);
+}
+
+.ant-input,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker {
+  background-color: var(--component-background) !important;
+  border-color: var(--border-color-base) !important;
+  color: var(--text-color) !important;
+}
+
+// 抽屉组件样式
+.ant-drawer {
+  .ant-drawer-content {
+    background-color: var(--component-background);
+  }
+
+  .ant-drawer-header {
+    background-color: var(--component-background);
+    border-bottom-color: var(--border-color-split);
+  }
+
+  .ant-drawer-title {
+    color: var(--text-color);
+  }
+
+  .ant-drawer-body {
+    color: var(--text-color);
+  }
+}
+
+// 全局文本颜色
+body {
+  color: var(--text-color);
+}
+
+
+//.ant-btn-primary:hover,
+//.ant-btn-primary:focus {
+//  color: #fff;
+//  background: var(--ant-primary-color);
+//}
+
+
+// 菜单样式
+.ant-menu-light {
+  .ant-menu-item-selected {
+    background-color: var(--ant-primary-1);
+    color: var(--ant-primary-color);
+  }
+
+  .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    color: var(--ant-primary-color);
+  }
+
+
+}
+
+// 菜单图标样式
+.ant-menu-item .anticon,
+.ant-menu-submenu-title .anticon {
+  color: inherit;
+}
+
+// === 全局滚动条样式 ===
+// 美化滚动条样式，适配明暗主题
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
+}
+
+// 暗黑模式滚动条 - 只保留全局样式，布局滚动条由PageContainer管理
+.dark-theme {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+// 页面布局滚动条位置优化
+// 注意：滚动条控制已移至PageContainer组件
+.ant-layout {
+  // 确保布局不产生额外滚动条
+  overflow: hidden;
+  
+  .ant-layout-content {
+    // 移除content级别的滚动条控制，由PageContainer接管
+    overflow: hidden;
+  }
+}
+
+// 表格样式增强
+.ant-table-thead > tr > th {
+  font-weight: 600 !important;
+  background-color: #f5f7fa !important;
+}
+
+.ant-table {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+
+  &.ant-table-small {
+    font-size: 14px;
+
+    .ant-table-thead > tr > th {
+    }
+  }
+
+  // 表格尺寸样式
+  &.bearjia-table-large {
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      padding: 16px;
+    }
+  }
+
+  &.bearjia-table-middle {
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      padding: 12px 16px;
+    }
+  }
+
+  &.bearjia-table-small {
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      padding: 8px 16px;
+    }
+  }
+}
+
+// 表单样式增强
+.bearjia-detail-page .ant-form-item-label {
+  font-weight: bold !important;
+}
+
+.bearjia-form-whole-row {
+  padding-left: 12px !important;
+  padding-right: 36px !important;
+}
+
+.ant-input-number {
+  width: 100% !important;
+}
+
+.ant-picker {
+  width: 100% !important;
+}
+
+// 按钮样式增强
+.ant-btn {
+  margin-left: 5px;
+  margin-right: 5px;
+  border-radius: 8px;
+}
+
+.ant-btn-primary {
+  color: #fff;
+  background-color: var(--primary-color);
+
+  &[disabled] {
+    color: rgba(0, 0, 0, 0.25);
+    background-color: #f5f5f5;
+  }
+}
+
+
+// 工具类样式
+.bearjia-button-divider {
+  height: 25px !important;
+  border-color: rgb(76, 20, 218) !important;
+  margin-left: 20px !important;
+  margin-right: 20px !important;
+}
+
+.bearjia-button-row {
+  margin-bottom: 12px !important;
+}
+
+// 主题切换过渡动画
+.theme-transition {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+
+  * {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+  }
+}
+
+.ant-modal-title {
+  padding: 0 4px;
+  border-left: 4px solid var(--primary-color);
+}
+
+// 弹出框按钮样式
+.ant-modal-confirm {
+  .ant-btn-primary {
+    color: #fff;
+    background-color: var(--primary-color);
+  }
+}
+
+// 确保所有主要按钮都有正确的样式
+:deep(.ant-btn-primary) {
+  color: #fff;
+  background-color: var(--primary-color);
+}
+
+
+// 暗色主题样式
+.dark-theme {
+  // 表格样式 - 修复边框颜色问题
+  .ant-table {
+    background: var(--component-background);
+    // border-color: var(--border-color-base) !important; // 修复主边框颜色
+
+    .ant-table-thead > tr > th {
+      background: var(--table-header-bg) !important;
+      color: var(--text-color);
+      // border-bottom: 1px solid var(--border-color-base) !important; // 修复边框颜色
+      // border-right: 1px solid var(--border-color-base) !important; // 新增竖直边框
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
+
+    .ant-table-tbody > tr > td {
+      // border-bottom: 1px solid var(--border-color-base) !important; // 修复边框颜色
+      // border-right: 1px solid var(--border-color-base) !important; // 新增竖直边框
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    // 表格内部组件边框修复
+    .ant-table-cell {
+      border-color: var(--border-color-base) !important;
+    }
+    
+    // 表格外边框修复
+    &.ant-table-bordered {
+      .ant-table-container {
+        border-color: var(--border-color-base) !important;
+      }
+    }
+
+    // 暗色主题下的斑马条纹
+    &.bearjia-table-striped {
+      .ant-table-tbody > tr:nth-child(even) > td {
+        background-color: rgba(255, 255, 255, 0.02);
+      }
+
+      .ant-table-tbody > tr:nth-child(even):hover > td {
+        background-color: rgba(255, 255, 255, 0.06);
+      }
+    }
+  }
+
+  // 文本颜色
+  .ant-typography,
+  .ant-statistic-title,
+  .ant-statistic-content,
+  .ant-descriptions-item-label,
+  .ant-descriptions-item-content,
+  .ant-form-item-label > label,
+  .ant-select-selection-item,
+  .ant-select-item,
+  .ant-checkbox + span,
+  .ant-radio-wrapper,
+  .ant-tabs-tab,
+  .ant-empty-description,
+  .ant-result-title,
+  .ant-result-subtitle,
+  .ant-drawer-title,
+  .ant-modal-title,
+  .ant-modal-confirm-title,
+  .ant-modal-confirm-content,
+  .ant-popover-inner-content,
+  .ant-tooltip-inner,
+  .ant-alert-message,
+  .ant-alert-description,
+  .ant-badge-count,
+  .ant-list-item-meta-title,
+  .ant-list-item-meta-description,
+  .ant-card-meta-title,
+  .ant-card-meta-description,
+  .ant-collapse-header,
+  .ant-collapse-content,
+  .ant-comment-content-author-name,
+  .ant-comment-content-detail,
+  .ant-tree-node-content-wrapper,
+  .ant-tree-title,
+  .ant-timeline-item-label,
+  .ant-timeline-item-content,
+  .ant-steps-item-title,
+  .ant-steps-item-description,
+  .ant-breadcrumb-link,
+  .ant-breadcrumb-separator,
+  .ant-pagination-item a,
+  .ant-pagination-prev a,
+  .ant-pagination-next a,
+  .ant-pagination-jump-prev a,
+  .ant-pagination-jump-next a,
+  .ant-transfer-list-header-title,
+  .ant-transfer-list-content-item,
+  .ant-tag,
+  .ant-rate-text,
+  .ant-slider-mark-text,
+  .ant-calendar-date,
+  .ant-calendar-month-panel-cell-content,
+  .ant-calendar-year-panel-cell-content,
+  .ant-calendar-decade-panel-cell-content,
+  .ant-time-picker-panel-input,
+  .ant-time-picker-panel-select li,
+  .ant-mention-dropdown-menu-item,
+  .ant-cascader-menu-item-content,
+  .ant-upload-list-item-name,
+  .ant-upload-list-item-card-actions,
+  .ant-upload-drag-hint,
+  .ant-progress-text,
+  .ant-progress-status-text,
+  .ant-anchor-link-title,
+  .ant-back-top-inner,
+  .ant-spin-text,
+  .ant-spin-dot,
+  .ant-divider-inner-text,
+  .ant-divider-plain-text,
+  .ant-affix,
+  .ant-drawer-body,
+  .ant-list-item {
+    color: var(--text-color) !important;
+  }
+
+  // 下拉菜单和选择器
+  .ant-select-dropdown,
+  .ant-dropdown-menu {
+    background-color: var(--component-background);
+
+    .ant-select-item,
+    .ant-dropdown-menu-item {
+      color: var(--text-color);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+
+      &-selected {
+        background-color: var(--primary-color);
+        color: #fff;
+      }
+    }
+  }
+
+  // 开关组件
+  .ant-switch {
+    background-color: rgba(255, 255, 255, 0.2);
+
+    &-checked {
+      background-color: var(--primary-color);
+    }
+  }
+
+  // 列表项
+  .ant-list-item {
+    color: var(--text-color);
+  }
+  
+  // === 页面容器背景覆盖 ===
+  // 确保所有可能的页面容器都使用正确的暗色背景
+  .page-container,
+  .content-wrapper,
+  .layout-container,
+  .app-container,
+  .layout-container__content,
+  [class*="container"],
+  [class*="wrapper"],
+  [class*="content"],
+  [class*="layout"] {
+    background-color: var(--bg-color) !important;
+  }
+}
+
+// 全局强制背景覆盖 - 修复所有页面容器的白色背景问题
+.dark-theme {
+  // 确保所有可能的页面容器都使用正确的暗色背景
+  .page-container,
+  .content-wrapper,
+  .layout-container,
+  .app-container,
+  .layout-container__content,
+  [class*="container"],
+  [class*="wrapper"],
+  [class*="content"],
+  [class*="layout"] {
+    background-color: var(--bg-color) !important;
+  }
+
+  // 特殊处理分页组件和表格周围区域
+  .ant-pagination,
+  .ant-table-pagination,
+  .ant-table-pagination-left,
+  .ant-table-pagination-right {
+    background-color: transparent !important;
+    
+    .ant-pagination-total-text {
+      color: var(--text-secondary) !important;
+    }
+    
+    // 分页按钮边框修复
+    .ant-pagination-item {
+      border-color: var(--border-color-base) !important;
+      
+      a {
+        color: var(--text-primary) !important;
+      }
+      
+      &:hover {
+        border-color: var(--primary-color) !important;
+        
+        a {
+          color: var(--primary-color) !important;
+        }
+      }
+      
+      &.ant-pagination-item-active {
+        border-color: var(--primary-color) !important;
+        background: var(--primary-color) !important;
+        
+        a {
+          color: #fff !important;
+        }
+      }
+    }
+    
+    .ant-pagination-prev,
+    .ant-pagination-next {
+      border-color: var(--border-color-base) !important;
+      
+      button {
+        color: var(--text-primary) !important;
+        border: none !important;
+      }
+      
+      &:hover {
+        border-color: var(--primary-color) !important;
+        
+        button {
+          color: var(--primary-color) !important;
+        }
+      }
+    }
+  }
+
+  // 确保表格外的区域也是暗色
+  .ant-table-wrapper {
+    background-color: var(--bg-color) !important;
+  }
+
+  // 卡片容器强制覆盖
+  .ant-card,
+  .ant-card-body {
+    background-color: var(--component-background) !important;
+    color: var(--text-primary) !important;
+  }
+
+  // 新增：修复表格右侧操作区域的白色背景
+  .ant-table-container {
+    background-color: var(--bg-color) !important;
+  }
+
+  // 修复表格内部所有区域
+  .ant-table-content,
+  .ant-table-body,
+  .ant-table-scroll {
+    background-color: var(--component-background) !important;
+  }
+
+  // 修复表格行内操作按钮区域
+  .ant-table-tbody .ant-table-cell {
+    background-color: transparent !important;
+  }
+
+  // 修复按钮组和操作栏
+  .ant-btn-group,
+  .table-actions,
+  .action-buttons {
+    background-color: transparent !important;
+  }
+
+
+}
+
+// 使用最高优先级确保搜索框样式正确
+.ant-input-search.ant-input-group.ant-input-group-compact {
+  display: flex !important;
+  align-items: stretch !important;
+  
+  .ant-input-group-wrapper {
+    display: flex !important;
+    flex: 1 !important;
+    
+    .ant-input-affix-wrapper {
+      border-right: none !important;
+      border-top-right-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+      
+      .ant-input {
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+  }
+  
+  .ant-input-group-addon {
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    
+    .ant-btn {
+      border-left: none !important;
+      border-top-left-radius: 0 !important;
+      border-bottom-left-radius: 0 !important;
+      margin-left: -1px !important;
+      background-color: var(--primary-color) !important;
+      border-color: var(--primary-color) !important;
+      
+      &:hover {
+        background-color: var(--primary-color-hover) !important;
+        border-color: var(--primary-color-hover) !important;
+      }
+    }
+  }
+}
+
+// 简化版本的搜索框修复
+.ant-input-search {
+  .ant-input-group-wrapper + .ant-input-group-addon {
+    margin-left: -1px !important;
+    
+    .ant-btn {
+      border-left: none !important;
+      border-top-left-radius: 0 !important;
+      border-bottom-left-radius: 0 !important;
+    }
+  }
+  
+  .ant-input-group-wrapper .ant-input-affix-wrapper {
+    border-right: none !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+}

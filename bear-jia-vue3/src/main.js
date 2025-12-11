@@ -1,0 +1,61 @@
+import {createApp} from 'vue';
+import {createPinia} from 'pinia';
+import App from './App.vue';
+import router from './router';
+import Antd from 'ant-design-vue';
+import directive from './directive';
+import VueHighlightJS from 'vue3-highlightjs';
+import 'vue3-highlightjs/styles/solarized-light.css';
+import 'ant-design-vue/dist/reset.css';
+import ErrorHandler from './plugins/errorHandler';
+import tablePlugin from '@/plugins/table';
+import FcDesigner from '@form-create/antd-designer'
+// 导入 dayjs 配置
+import './plugins/dayjs';
+// 导入全局样式 (包含所有主题样式)
+import './style/global.less';
+// 导入主题服务
+import { themeService } from '@/utils/theme';
+// 应用挂载后初始化配置
+import {initAllConfigs, watchConfigChanges} from '@/utils/configInit';
+// 注册全局组件
+import GlobalLoading from './components/common/GlobalLoading.vue';
+import DictTag from './components/DictTag/index.vue';
+// 导入工具函数
+
+// 导入字典管理函数
+import {useDict} from '@/composables/useDict.js';
+
+const app = createApp(App);
+const pinia = createPinia();
+
+app.use(pinia)
+    .use(router)
+    .use(Antd)
+    .use(directive)
+    .use(VueHighlightJS)
+    .use(ErrorHandler)
+    .use(tablePlugin)
+    .use(FcDesigner)
+    .use(FcDesigner.formCreate);
+
+// 挂载应用
+app.mount('#app');
+
+// 初始化主题服务和其他配置
+setTimeout(async () => {
+    // 先初始化主题服务
+    await themeService.init({
+        followSystem: true // 是否跟随系统主题
+    });
+
+    // 再初始化其他配置
+    initAllConfigs();
+    watchConfigChanges();
+}, 100);
+
+app.component('GlobalLoading', GlobalLoading);
+app.component('DictTag', DictTag);
+
+// 添加全局属性
+app.config.globalProperties.useDict = useDict;

@@ -1,0 +1,172 @@
+@import '../theme.less';
+@import '../mixins.less';
+
+// 侧边栏菜单样式
+.side-menu {
+  height: 100%;
+  border-right: 0;
+
+  // 自定义滚动条
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.24);
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 3px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+  }
+}
+
+// Logo区域样式
+.layout-logo {
+  height: 64px;
+  line-height: 64px;
+  overflow: hidden;
+  white-space: nowrap;
+  // background: var(--menu-bg-dark);
+  padding: 0 16px;
+
+  img {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+
+  h1 {
+    display: inline-block;
+    margin: 0;
+    color: #fff;
+    font-weight: 600;
+    font-size: 18px;
+    vertical-align: middle;
+  }
+}
+
+// 亮色主题菜单样式
+.ant-menu-light {
+  background: var(--menu-bg-light);
+
+  .ant-menu-item {
+    color: var(--menu-item-color-light);
+    transition: all 0.3s;
+
+    &.ant-menu-item-selected {
+      color: var(--menu-item-active-color-light) !important;
+      background: var(--menu-item-active-bg-light) !important;
+
+      &::after {
+        border-right-color: var(--primary-color) !important;
+      }
+
+      .anticon {
+        color: var(--menu-item-active-color-light) !important;
+      }
+    }
+
+    .anticon {
+      color: inherit;
+    }
+  }
+
+  .ant-menu-submenu-title {
+    color: var(--menu-item-color-light);
+    transition: all 0.3s;
+
+
+
+    .anticon {
+      color: inherit;
+    }
+  }
+
+  .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    color: var(--menu-item-active-color-light) !important;
+
+    .anticon {
+      color: var(--menu-item-active-color-light) !important;
+    }
+  }
+}
+
+// 暗色主题菜单样式
+.dark-theme {
+  .side-menu {
+    background: var(--component-background) !important;
+  }
+
+  .ant-menu-dark {
+    background: var(--component-background) !important;
+
+    .ant-menu-item {
+      .menu-item-base();
+      color: var(--menu-item-color-dark);
+      background: transparent !important;
+
+      &:hover {
+        .menu-item-hover();
+      }
+
+      &.ant-menu-item-selected {
+        .menu-item-active();
+      }
+    }
+
+    .ant-menu-submenu-title {
+      .menu-item-base();
+      color: var(--menu-item-color-dark);
+      background: transparent !important;
+
+      &:hover {
+        .menu-item-hover();
+      }
+      
+      &.ant-menu-submenu-selected {
+        color: var(--primary-color) !important;
+        background: linear-gradient(135deg, rgba(24, 144, 255, 0.2), rgba(24, 144, 255, 0.15)) !important;
+        
+        span {
+          background: transparent !important;
+        }
+      }
+    }
+
+    .ant-menu-submenu-selected > .ant-menu-submenu-title {
+      color: var(--menu-item-active-color-dark) !important;
+
+      .anticon {
+        color: var(--menu-item-active-color-dark) !important;
+      }
+    }
+
+    // 子菜单背景
+    .ant-menu-submenu {
+      background: transparent !important;
+      
+      .ant-menu-sub {
+        background: var(--component-background) !important;
+      }
+    }
+  }
+
+  // 强制覆盖所有可能的 Ant Design 暗色背景
+  .ant-layout-sider {
+    background: var(--component-background) !important;
+    
+    .ant-menu {
+      background: var(--component-background) !important;
+    }
+  }
+}

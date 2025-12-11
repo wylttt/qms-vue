@@ -1,0 +1,4 @@
+Application Version: ${project.version}
+Spring Boot Version: ${spring-boot.version}
+
+//         小熊脚手架      永不宕机      永无BUG               //

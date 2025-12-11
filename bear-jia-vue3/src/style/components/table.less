@@ -1,0 +1,150 @@
+/**
+ * 表格组件专用样式
+ * 包含表格、分页、操作列等相关样式
+ */
+
+@import '../mixins.less';
+
+// === 表格基础样式 ===
+.dark-theme {
+  .ant-table {
+    background: var(--component-background) !important;
+
+    .ant-table-thead > tr > th {
+      background: var(--table-header-bg) !important;
+      color: var(--text-primary) !important;
+      border-bottom: 1px solid var(--border-color-split) !important;
+    }
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid var(--border-color-split) !important;
+      color: var(--text-primary) !important;
+    }
+    
+    // 表格容器和内容区域
+    .ant-table-container,
+    .ant-table-content,
+    .ant-table-body,
+    .ant-table-scroll {
+      background-color: var(--component-background) !important;
+    }
+
+    // 表格行样式
+    .ant-table-tbody .ant-table-cell {
+      background-color: transparent !important;
+    }
+
+    // 斑马纹效果优化
+    .ant-table-tbody > tr:nth-child(odd) > td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .ant-table-tbody > tr:nth-child(even):hover > td {
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  // === 表格操作列样式 ===
+  .ant-table {
+    .table-action-bar {
+      .action-buttons {
+        background-color: transparent !important;
+        
+        .action-btn {
+          .action-button-base();
+          color: var(--text-primary) !important;
+          background-color: rgba(255, 255, 255, 0.05) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+          }
+          
+          // 不同类型按钮的主题色
+          &.view-btn {
+            .view-button-theme();
+          }
+          
+          &.edit-btn {
+            .edit-button-theme();
+          }
+          
+          &.delete-btn {
+            .delete-button-theme();
+          }
+          
+          &.custom-btn {
+            .custom-button-theme();
+          }
+          
+          &.warning-btn {
+            .warning-button-theme();
+          }
+          
+          &.info-btn {
+            .info-button-theme();
+          }
+          
+          &.primary-btn {
+            .primary-button-theme();
+          }
+        }
+      }
+    }
+    
+    // 按钮组和操作栏
+    .ant-btn-group,
+    .table-actions {
+      background-color: transparent !important;
+    }
+  }
+
+  // === 分页组件样式 ===
+  .ant-pagination {
+    background-color: transparent !important;
+    
+    .ant-pagination-item {
+      background-color: var(--component-background) !important;
+      border-color: var(--border-color-base) !important;
+      
+      a {
+        color: var(--text-primary) !important;
+      }
+      
+      &-active {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        
+        a {
+          color: #fff !important;
+        }
+      }
+    }
+    
+    .ant-pagination-prev,
+    .ant-pagination-next {
+      background-color: var(--component-background) !important;
+      border-color: var(--border-color-base) !important;
+      color: var(--text-primary) !important;
+    }
+    
+    .ant-pagination-total-text {
+      color: var(--text-secondary) !important;
+    }
+  }
+  
+  // 表格分页相关
+  .ant-table-pagination,
+  .ant-table-pagination-left,
+  .ant-table-pagination-right {
+    background-color: transparent !important;
+  }
+
+  // 表格外的区域
+  .ant-table-wrapper {
+    background-color: var(--bg-color) !important;
+  }
+}

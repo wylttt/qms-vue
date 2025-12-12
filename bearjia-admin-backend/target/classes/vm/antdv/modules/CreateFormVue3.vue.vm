@@ -1,0 +1,318 @@
+<template>
+  <a-modal
+    :title="formTitle"
+    :width="800"
+    :visible="open"
+    :bodyStyle="{ paddingBottom: '8px' }"
+    :confirmLoading="submitLoading"
+    @cancel="cancel"
+    @ok="submitForm"
+  >
+    <a-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      :label-col="labelCol"
+      :wrapper-col="wrapperCol"
+    >
+#foreach($column in $columns)
+#if($column.insert || $column.edit)
+#if(!$column.pk)
+#if($column.usableColumn)
+#set($field=$column.javaField)
+#set($dictType=$column.dictType)
+#set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+#if($column.htmlType == "input")
+      <a-form-item label="${comment}" prop="${field}">
+        <a-input v-model:value="form.${field}" placeholder="请输入${comment}" />
+      </a-form-item>
+#elseif($column.htmlType == "imageUpload")
+      <a-form-item label="${comment}" prop="${field}">
+        <image-upload v-model:value="form.${field}"/>
+      </a-form-item>
+#elseif($column.htmlType == "fileUpload")
+      <a-form-item label="${comment}" prop="${field}">
+        <file-upload v-model:value="form.${field}"/>
+      </a-form-item>
+#elseif($column.htmlType == "editor")
+      <a-form-item label="${comment}" prop="${field}">
+        <editor v-model:value="form.${field}" :min-height="192"/>
+      </a-form-item>
+#elseif($column.htmlType == "select" && "" != $dictType)
+      <a-form-item label="${comment}" prop="${field}">
+        <a-select placeholder="请选择${comment}" v-model:value="form.${field}" style="width: 100%">
+          <a-select-option v-for="(d, index) in ${field}Options" :key="index" :value="d.value">{{d.label}}</a-select-option>
+        </a-select>
+      </a-form-item>
+#elseif($column.htmlType == "select" && $dictType)
+      <a-form-item label="${comment}" prop="${field}">
+        <a-select placeholder="请选择${comment}" v-model:value="form.${field}" style="width: 100%">
+          <a-select-option value="">请选择字典生成</a-select-option>
+        </a-select>
+      </a-form-item>
+#elseif($column.htmlType == "checkbox" && "" != $dictType)
+      <a-form-item label="${comment}" prop="${field}">
+        <a-checkbox-group v-model:value="form.${field}">
+          <a-checkbox v-for="(d, index) in ${field}Options" :key="index" :value="d.value">
+            {{d.label}}
+          </a-checkbox>
+        </a-checkbox-group>
+      </a-form-item>
+#elseif($column.htmlType == "checkbox" && $dictType)
+      <a-form-item label="${comment}" prop="${field}">
+        <a-checkbox-group v-model:value="form.${field}">
+          <a-checkbox>请选择字典生成</a-checkbox>
+        </a-checkbox-group>
+      </a-form-item>
+#elseif($column.htmlType == "radio" && "" != $dictType)
+      <a-form-item label="${comment}" prop="${field}">
+        <a-radio-group v-model:value="form.${field}">
+          <a-radio v-for="(d, index) in ${field}Options" :key="index" :value="d.value">
+            {{d.label}}
+          </a-radio>
+        </a-radio-group>
+      </a-form-item>
+#elseif($column.htmlType == "radio" && $dictType)
+      <a-form-item label="${comment}" prop="${field}">
+        <a-radio-group v-model:value="form.${field}">
+          <a-radio value="">请选择字典生成</a-radio>
+        </a-radio-group>
+      </a-form-item>
+#elseif($column.htmlType == "datetime")
+      <a-form-item label="${comment}" prop="${field}">
+        <a-date-picker style="width: 100%" v-model:value="form.${field}" format="YYYY-MM-DD HH:mm:ss" placeholder="请选择${comment}" />
+      </a-form-item>
+#elseif($column.htmlType == "textarea")
+      <a-form-item label="${comment}" prop="${field}">
+        <a-textarea v-model:value="form.${field}" placeholder="请输入${comment}" :auto-size="{ minRows: 4, maxRows: 4}"/>
+      </a-form-item>
+#end
+#end
+#end
+#end
+#end
+#if($tplCategory == 'tree')
+      <a-form-item label="上级${functionName}" prop="${treeParentCode}">
+        <a-tree-select
+          v-model:value="form.${treeParentCode}"
+          style="width: 100%"
+          :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+          :tree-data="${businessName}Options"
+          placeholder="选择上级${functionName}"
+          tree-default-expand-all
+          :field-names="{ children: 'children', label: '${treeName}', value: '${treeCode}' }"
+        />
+      </a-form-item>
+#end
+#if($table.sub)
+      <a-divider orientation="left">
+        <b>${subTable.functionName}信息</b>
+      </a-divider>
+      <sub-table ref="subTableRef" :${subTable.businessName}List="form.${subTable.businessName}List" />
+#end
+    </a-form>
+  </a-modal>
+</template>
+
+<script setup>
+import { getCurrentInstance, reactive, ref, toRefs } from 'vue'
+import { message } from 'ant-design-vue'
+import { get${BusinessName}, add${BusinessName}, update${BusinessName} } from '@/api/${moduleName}/${businessName}'
+#if($table.sub)
+import SubTable from './SubTable.vue'
+#end
+
+// 获取当前实例
+const { proxy } = getCurrentInstance()
+
+// Props
+const props = defineProps({
+#foreach ($column in $columns)
+#if(${column.dictType} != '')
+  ${column.javaField}Options: {
+    type: Array,
+    default: () => []
+  },
+#end
+#end
+#if($tplCategory == 'tree')
+  ${businessName}Options: {
+    type: Array,
+    default: () => []
+  }
+#end
+})
+
+// Emits
+const emit = defineEmits(['ok', 'select-tree'])
+
+// 组件引用
+const formRef = ref()
+#if($table.sub)
+const subTableRef = ref()
+#end
+
+// 响应式数据
+const data = reactive({
+  submitLoading: false,
+  formTitle: '',
+  // 表单参数
+  form: {
+#foreach ($column in $columns)
+#if($column.insert || $column.edit)
+#if($column.htmlType == "radio")
+    $column.javaField: #if($column.javaType == "Integer" || $column.javaType == "Long")0#else'0'#end,
+#elseif($column.htmlType == "checkbox")
+    $column.javaField: [],
+#else
+    $column.javaField: null,
+#end
+#end
+#end
+#if($table.sub)
+    ${subTable.businessName}List: []
+#end
+  },
+  // 1增加,2修改
+  formType: 1,
+  open: false,
+  rules: {
+#foreach ($column in $columns)
+#if(($column.insert || $column.edit) && !$column.pk)
+#if(($column.usableColumn) || (!$column.superColumn))
+#if($column.required)
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+    $column.javaField: [
+      { required: true, message: '$comment不能为空', trigger: #if($column.htmlType == "select")'change'#else'blur'#end }
+    ],
+#end
+#end
+#end
+#end
+  }
+})
+
+const { submitLoading, formTitle, form, formType, open, rules } = toRefs(data)
+
+// 表单布局
+const labelCol = { span: 6 }
+const wrapperCol = { span: 18 }
+
+// 方法定义
+const onClose = () => {
+  open.value = false
+#if($table.sub)
+  subTableRef.value.subList = []
+#end
+}
+
+// 取消按钮
+const cancel = () => {
+  open.value = false
+  reset()
+#if($table.sub)
+  subTableRef.value.subList = []
+#end
+}
+
+// 表单重置
+const reset = () => {
+  Object.assign(form.value, {
+#foreach ($column in $columns)
+#if($column.insert || $column.edit)
+#if($column.htmlType == "radio")
+    $column.javaField: #if($column.javaType == "Integer" || $column.javaType == "Long")0#else'0'#end,
+#elseif($column.htmlType == "checkbox")
+    $column.javaField: [],
+#else
+    $column.javaField: null,
+#end
+#end
+#end
+#if($table.sub)
+    ${subTable.businessName}List: []
+#end
+  })
+  formRef.value?.resetFields()
+}
+
+/** 新增按钮操作 */
+const handleAdd = (row) => {
+  reset()
+  open.value = true
+  formTitle.value = '添加${functionName}'
+  formType.value = 1
+#if($tplCategory == 'tree')
+  if (row != null && row.${treeCode}) {
+    form.value.${treeParentCode} = row.${treeCode}
+  } else {
+    form.value.${treeParentCode} = 0
+  }
+#end
+#if($table.sub)
+  subTableRef.value.subList = []
+#end
+}
+
+/** 修改按钮操作 */
+const handleUpdate = (row, ids) => {
+  reset()
+  const ${pkColumn.javaField} = row ? row.${pkColumn.javaField} : ids
+  get${BusinessName}(${pkColumn.javaField}).then(response => {
+    Object.assign(form.value, response.data)
+#if($table.sub)
+    form.value.${subTable.businessName}List = response.data.${subTable.businessName}List
+    subTableRef.value.subList = response.data.${subTable.businessName}List
+#end
+    open.value = true
+    formTitle.value = '修改${functionName}'
+    formType.value = 2
+  })
+}
+
+/** 提交按钮 */
+const submitForm = () => {
+  formRef.value.validate().then(() => {
+    submitLoading.value = true
+#if($table.sub)
+    form.value.${subTable.businessName}List = subTableRef.value.subList
+#end
+    if (formType.value === 1) {
+      add${BusinessName}(form.value).then(response => {
+        message.success('新增成功')
+        open.value = false
+        emit('ok')
+      }).finally(() => {
+        submitLoading.value = false
+      })
+    } else {
+      update${BusinessName}(form.value).then(response => {
+        message.success('修改成功')
+        open.value = false
+        emit('ok')
+      }).finally(() => {
+        submitLoading.value = false
+      })
+    }
+  }).catch(() => {
+    submitLoading.value = false
+  })
+}
+
+// 暴露方法
+defineExpose({
+  handleAdd,
+  handleUpdate
+})
+</script>

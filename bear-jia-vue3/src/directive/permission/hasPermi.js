@@ -11,7 +11,13 @@ export default {
     const all_permission = "*:*:*";
     const permissions = useUserStore().permissions;
 
-    if (value && value instanceof Array && value.length > 0) {
+    // 如果没有传权限值(null, undefined, 空数组)，则不进行权限控制，默认显示
+    if (!value || (value instanceof Array && value.length === 0)) {
+      return;
+    }
+
+    // 权限值必须是非空数组
+    if (value instanceof Array && value.length > 0) {
       const permissionFlag = value;
 
       const hasPermissions = permissions.some(permission => {

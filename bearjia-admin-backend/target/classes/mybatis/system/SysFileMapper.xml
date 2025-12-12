@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.system.mapper.SysFileMapper">
+    
+    <resultMap type="SysFile" id="SysFileResult">
+        <result property="id"               column="id"                 />
+        <result property="parentId"         column="parent_id"          />
+        <result property="isFolder"         column="is_folder"          />
+        <result property="fileName"         column="file_name"          />
+        <result property="originalName"     column="original_name"      />
+        <result property="fileType"         column="file_type"          />
+        <result property="fileSize"         column="file_size"          />
+        <result property="filePath"         column="file_path"          />
+        <result property="fileUrl"          column="file_url"           />
+        <result property="contentHash"      column="content_hash"       />
+        <result property="mimeType"         column="mime_type"          />
+        <result property="businessType"     column="business_type"      />
+        <result property="businessId"       column="business_id"        />
+        <result property="status"           column="status"             />
+        <result property="processProgress"  column="process_progress"   />
+        <result property="errorMessage"     column="error_message"      />
+        <result property="downloadCount"    column="download_count"     />
+        <result property="metadata"         column="metadata"           />
+        <result property="createBy"         column="create_by"          />
+        <result property="createTime"       column="create_time"        />
+        <result property="updateBy"         column="update_by"          />
+        <result property="updateTime"       column="update_time"        />
+        <result property="remark"           column="remark"             />
+    </resultMap>
+
+    <sql id="selectSysFileVo">
+        select id, parent_id, is_folder, file_name, original_name, file_type, file_size, file_path, file_url, content_hash, mime_type,
+               business_type, business_id, status, process_progress, error_message, download_count, metadata,
+               create_by, create_time, update_by, update_time, remark
+        from sys_file
+    </sql>
+
+    <select id="selectSysFileList" parameterType="SysFile" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        <where>  
+            <if test="fileName != null and fileName != ''"> and file_name like concat('%', #{fileName}, '%')</if>
+            <if test="originalName != null and originalName != ''"> and original_name like concat('%', #{originalName}, '%')</if>
+            <if test="fileType != null and fileType != ''"> and file_type = #{fileType}</if>
+            <if test="businessType != null and businessType != ''"> and business_type = #{businessType}</if>
+            <if test="businessId != null"> and business_id = #{businessId}</if>
+            <if test="status != null"> and status = #{status}</if>
+            <if test="mimeType != null and mimeType != ''"> and mime_type = #{mimeType}</if>
+            <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectSysFileById" parameterType="Long" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectFilesByBusiness" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where business_type = #{businessType}
+        <if test="businessId != null">
+            and business_id = #{businessId}
+        </if>
+        and status != 0
+        order by create_time desc
+    </select>
+
+    <select id="selectFileByContentHash" parameterType="String" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where content_hash = #{contentHash} and status != 0
+        limit 1
+    </select>
+
+    <select id="selectRagDocuments" parameterType="Long" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where business_type = 'rag' 
+        <if test="knowledgeBaseId != null">
+            and business_id = #{knowledgeBaseId}
+        </if>
+        and status != 0
+        order by create_time desc
+    </select>
+
+    <select id="selectUserAvatar" parameterType="Long" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where business_type = 'avatar' and business_id = #{userId} and status != 0
+        order by create_time desc
+        limit 1
+    </select>
+
+    <select id="countSysFiles" parameterType="SysFile" resultType="int">
+        select count(*) from sys_file
+        <where>
+            <if test="businessType != null and businessType != ''"> and business_type = #{businessType}</if>
+            <if test="businessId != null"> and business_id = #{businessId}</if>
+            <if test="status != null"> and status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="countFilesByBusinessType" parameterType="String" resultType="int">
+        select count(*) from sys_file where business_type = #{businessType} and status != 0
+    </select>
+
+    <select id="sumFileSizeByBusinessType" parameterType="String" resultType="Long">
+        select IFNULL(sum(file_size), 0) from sys_file where business_type = #{businessType} and status != 0
+    </select>
+
+    <select id="selectDuplicateFiles" resultMap="SysFileResult">
+        select f1.* from sys_file f1
+        inner join (
+            select content_hash from sys_file 
+            where status != 0 
+            group by content_hash 
+            having count(*) > 1
+        ) f2 on f1.content_hash = f2.content_hash
+        where f1.status != 0
+        order by f1.content_hash, f1.create_time
+    </select>
+
+    <select id="selectOrphanFiles" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where business_type = 'common' and business_id is null and status != 0
+        and create_time &lt; date_sub(now(), interval 7 day)
+        order by create_time desc
+    </select>
+        
+    <insert id="insertSysFile" parameterType="SysFile" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_file
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="fileName != null and fileName != ''">file_name,</if>
+            <if test="originalName != null and originalName != ''">original_name,</if>
+            <if test="fileType != null and fileType != ''">file_type,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="filePath != null and filePath != ''">file_path,</if>
+            <if test="fileUrl != null and fileUrl != ''">file_url,</if>
+            <if test="contentHash != null and contentHash != ''">content_hash,</if>
+            <if test="mimeType != null and mimeType != ''">mime_type,</if>
+            <if test="businessType != null and businessType != ''">business_type,</if>
+            <if test="businessId != null">business_id,</if>
+            <if test="status != null">status,</if>
+            <if test="processProgress != null">process_progress,</if>
+            <if test="errorMessage != null">error_message,</if>
+            <if test="downloadCount != null">download_count,</if>
+            <if test="metadata != null">metadata,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null and updateBy != ''">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="fileName != null and fileName != ''">#{fileName},</if>
+            <if test="originalName != null and originalName != ''">#{originalName},</if>
+            <if test="fileType != null and fileType != ''">#{fileType},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="filePath != null and filePath != ''">#{filePath},</if>
+            <if test="fileUrl != null and fileUrl != ''">#{fileUrl},</if>
+            <if test="contentHash != null and contentHash != ''">#{contentHash},</if>
+            <if test="mimeType != null and mimeType != ''">#{mimeType},</if>
+            <if test="businessType != null and businessType != ''">#{businessType},</if>
+            <if test="businessId != null">#{businessId},</if>
+            <if test="status != null">#{status},</if>
+            <if test="processProgress != null">#{processProgress},</if>
+            <if test="errorMessage != null">#{errorMessage},</if>
+            <if test="downloadCount != null">#{downloadCount},</if>
+            <if test="metadata != null">#{metadata},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null and updateBy != ''">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysFile" parameterType="SysFile">
+        update sys_file
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="fileName != null and fileName != ''">file_name = #{fileName},</if>
+            <if test="originalName != null and originalName != ''">original_name = #{originalName},</if>
+            <if test="fileType != null and fileType != ''">file_type = #{fileType},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="filePath != null and filePath != ''">file_path = #{filePath},</if>
+            <if test="fileUrl != null and fileUrl != ''">file_url = #{fileUrl},</if>
+            <if test="contentHash != null and contentHash != ''">content_hash = #{contentHash},</if>
+            <if test="mimeType != null and mimeType != ''">mime_type = #{mimeType},</if>
+            <if test="businessType != null and businessType != ''">business_type = #{businessType},</if>
+            <if test="businessId != null">business_id = #{businessId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="processProgress != null">process_progress = #{processProgress},</if>
+            <if test="errorMessage != null">error_message = #{errorMessage},</if>
+            <if test="downloadCount != null">download_count = #{downloadCount},</if>
+            <if test="metadata != null">metadata = #{metadata},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateFileStatus">
+        update sys_file set status = #{status}, update_time = now() where id = #{id}
+    </update>
+
+    <update id="updateProcessProgress">
+        update sys_file 
+        set process_progress = #{progress}, 
+            error_message = #{errorMessage},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <update id="incrementDownloadCount">
+        update sys_file set download_count = download_count + 1, update_time = now() where id = #{id}
+    </update>
+
+    <update id="deleteSysFileById" parameterType="Long">
+        update sys_file set status = 0, update_time = now() where id = #{id}
+    </update>
+
+    <update id="deleteSysFileByIds" parameterType="String">
+        update sys_file set status = 0, update_time = now() where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <delete id="deleteSysFilePhysically" parameterType="Long">
+        delete from sys_file where id = #{id}
+    </delete>
+
+    <delete id="deleteSysFilePhysicallyByIds" parameterType="String">
+        delete from sys_file where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="cleanDeletedFiles">
+        delete from sys_file
+        where status = 0
+        and update_time &lt; date_sub(now(), interval #{days} day)
+    </delete>
+
+    <!-- 文件夹相关查询 -->
+    <select id="selectFolderTree" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where is_folder = 1
+        and status = 1
+        <if test="parentId != null">and parent_id = #{parentId}</if>
+        <if test="businessType != null and businessType != ''">and business_type = #{businessType}</if>
+        order by file_name
+    </select>
+
+    <select id="selectFilesByParentId" resultMap="SysFileResult">
+        <include refid="selectSysFileVo"/>
+        where parent_id = #{parentId}
+        and status = 1
+        <if test="businessType != null and businessType != ''">and business_type = #{businessType}</if>
+        order by is_folder desc, file_name
+    </select>
+
+    <insert id="createFolder" parameterType="SysFile" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_file (
+            parent_id,
+            file_name,
+            original_name,
+            file_type,
+            file_size,
+            file_path,
+            content_hash,
+            business_type,
+            business_id,
+            is_folder,
+            status,
+            create_by,
+            create_time,
+            remark
+        ) values (
+            #{parentId},
+            #{fileName},
+            #{fileName},
+            'folder',
+            0,
+            '',
+            MD5(CONCAT('folder_', #{fileName}, '_', NOW())),
+            IFNULL(#{businessType}, 'common'),
+            #{businessId},
+            1,
+            1,
+            #{createBy},
+            #{createTime},
+            #{remark}
+        )
+    </insert>
+
+    <update id="moveFileToFolder">
+        update sys_file set parent_id = #{targetParentId}, update_time = now() where id = #{fileId}
+    </update>
+
+    <update id="batchMoveFiles">
+        update sys_file set parent_id = #{targetParentId}, update_time = now()
+        where id in
+        <foreach item="fileId" collection="fileIds" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+    </update>
+
+    <select id="checkFolderNameExists" resultType="boolean">
+        select count(*) > 0 from sys_file
+        where parent_id = #{parentId}
+        and file_name = #{fileName}
+        and is_folder = 1
+        and status = 1
+        <if test="businessType != null and businessType != ''">and business_type = #{businessType}</if>
+        <if test="excludeId != null">and id != #{excludeId}</if>
+    </select>
+
+    <select id="getFolderPath" resultMap="SysFileResult">
+        WITH RECURSIVE folder_path AS (
+            SELECT id, parent_id, file_name, 0 as level
+            FROM sys_file
+            WHERE id = #{folderId} AND is_folder = 1
+
+            UNION ALL
+
+            SELECT f.id, f.parent_id, f.file_name, fp.level + 1
+            FROM sys_file f
+            INNER JOIN folder_path fp ON f.id = fp.parent_id
+            WHERE f.is_folder = 1
+        )
+        SELECT id, parent_id, file_name FROM folder_path ORDER BY level DESC
+    </select>
+
+</mapper>

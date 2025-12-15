@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcResidentMapper">
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.entity.GcResident" id="GcResidentResult">
+        <id     property="residentId"           column="resident_id"      />
+        <result property="realName"             column="real_name"        />
+        <result property="idCardNo"             column="id_card_no"       />
+        <result property="gender"               column="gender"           />
+        <result property="birthDate"            column="birth_date"       />
+        <result property="phoneNumber"          column="phone_number"     />
+        <result property="provinceId"           column="province_id"      />
+        <result property="cityId"               column="city_id"          />
+        <result property="districtId"           column="district_id"      />
+        <result property="streetId"             column="street_id"        />
+        <result property="communityId"          column="community_id"     />
+        <result property="detailAddress"        column="detail_address"   />
+        <result property="appointmentSiteId"    column="appointment_site_id" />
+        <result property="surveyorId"           column="surveyor_id"      />
+        <result property="isFocusGroup"         column="is_focus_group"   />
+        <result property="registrationType"     column="registration_type"/>
+        <result property="createBy"             column="create_by"        />
+        <result property="createTime"           column="create_time"      />
+        <result property="updateBy"             column="update_by"        />
+        <result property="updateTime"           column="update_time"      />
+        <result property="remark"               column="remark"           />
+    </resultMap>
+    
+    <resultMap type="com.javaxiaobear.module.gc.domain.vo.ResidentVO" id="ResidentVOResult">
+        <id     property="residentId"           column="resident_id"      />
+        <result property="realName"             column="real_name"        />
+        <result property="idCardNo"             column="id_card_no"       />
+        <result property="gender"               column="gender"           />
+        <result property="birthDate"            column="birth_date"       />
+        <result property="age"                  column="age"              />
+        <result property="phoneNumber"          column="phone_number"     />
+        <result property="provinceName"         column="province_name"    />
+        <result property="cityName"             column="city_name"        />
+        <result property="districtName"         column="district_name"    />
+        <result property="streetName"           column="street_name"      />
+        <result property="communityName"        column="community_name"   />
+        <result property="fullRegionName"       column="full_region_name" />
+        <result property="detailAddress"        column="detail_address"   />
+        <result property="appointmentSiteName"  column="appointment_site_name" />
+        <result property="isFocusGroup"         column="is_focus_group"   />
+        <result property="surveyorName"         column="surveyor_name"    />
+        <result property="createTime"           column="create_time"      />
+    </resultMap>
+
+    <sql id="selectResidentVo">
+        select 
+            r.resident_id, r.real_name, r.id_card_no, r.gender, r.birth_date, r.phone_number,
+            r.province_id, r.city_id, r.district_id, r.street_id, r.community_id,
+            r.detail_address, r.appointment_site_id, r.surveyor_id,
+            r.is_focus_group, r.registration_type, r.create_time, r.remark,
+            TIMESTAMPDIFF(YEAR, r.birth_date, CURDATE()) as age,
+            p.region_name as province_name,
+            c.region_name as city_name,
+            d.region_name as district_name,
+            s.region_name as street_name,
+            cm.region_name as community_name,
+            CONCAT(p.region_name, c.region_name, d.region_name, s.region_name, cm.region_name) as full_region_name,
+            site.site_name as appointment_site_name,
+            sv.real_name as surveyor_name
+        from gc_resident r
+        left join gc_region p on r.province_id = p.region_id
+        left join gc_region c on r.city_id = c.region_id
+        left join gc_region d on r.district_id = d.region_id
+        left join gc_region s on r.street_id = s.region_id
+        left join gc_region cm on r.community_id = cm.region_id
+        left join gc_sampling_site site on r.appointment_site_id = site.site_id
+        left join gc_surveyor sv on r.surveyor_id = sv.surveyor_id
+    </sql>
+
+    <select id="selectResidentList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcResident" resultMap="ResidentVOResult">
+        <include refid="selectResidentVo"/>
+        <where>
+            <if test="realName != null and realName != ''">
+                AND r.real_name like concat('%', #{realName}, '%')
+            </if>
+            <if test="idCardNo != null and idCardNo != ''">
+                AND r.id_card_no = #{idCardNo}
+            </if>
+            <if test="phoneNumber != null and phoneNumber != ''">
+                AND r.phone_number = #{phoneNumber}
+            </if>
+            <if test="provinceId != null">
+                AND r.province_id = #{provinceId}
+            </if>
+            <if test="cityId != null">
+                AND r.city_id = #{cityId}
+            </if>
+            <if test="districtId != null">
+                AND r.district_id = #{districtId}
+            </if>
+            <if test="streetId != null">
+                AND r.street_id = #{streetId}
+            </if>
+            <if test="communityId != null">
+                AND r.community_id = #{communityId}
+            </if>
+            <if test="appointmentSiteId != null">
+                AND r.appointment_site_id = #{appointmentSiteId}
+            </if>
+            <if test="isFocusGroup != null">
+                AND r.is_focus_group = #{isFocusGroup}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND date_format(r.create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND date_format(r.create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
+        </where>
+        order by r.create_time desc
+    </select>
+
+    <select id="selectResidentById" parameterType="Long" resultMap="ResidentVOResult">
+        <include refid="selectResidentVo"/>
+        where r.resident_id = #{residentId}
+    </select>
+
+    <select id="selectResidentByIdCardNo" parameterType="String" resultMap="GcResidentResult">
+        select resident_id, real_name, id_card_no, gender, birth_date, phone_number
+        from gc_resident
+        where id_card_no = #{idCardNo}
+        limit 1
+    </select>
+
+    <insert id="insertResident" parameterType="com.javaxiaobear.module.gc.domain.entity.GcResident" useGeneratedKeys="true" keyProperty="residentId">
+        insert into gc_resident(
+            <if test="realName != null and realName != ''">real_name,</if>
+            <if test="idCardNo != null and idCardNo != ''">id_card_no,</if>
+            <if test="gender != null and gender != ''">gender,</if>
+            <if test="birthDate != null">birth_date,</if>
+            <if test="phoneNumber != null and phoneNumber != ''">phone_number,</if>
+            <if test="provinceId != null">province_id,</if>
+            <if test="cityId != null">city_id,</if>
+            <if test="districtId != null">district_id,</if>
+            <if test="streetId != null">street_id,</if>
+            <if test="communityId != null">community_id,</if>
+            <if test="detailAddress != null and detailAddress != ''">detail_address,</if>
+            <if test="appointmentSiteId != null">appointment_site_id,</if>
+            <if test="surveyorId != null">surveyor_id,</if>
+            <if test="isFocusGroup != null">is_focus_group,</if>
+            <if test="registrationType != null and registrationType != ''">registration_type,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        )values(
+            <if test="realName != null and realName != ''">#{realName},</if>
+            <if test="idCardNo != null and idCardNo != ''">#{idCardNo},</if>
+            <if test="gender != null and gender != ''">#{gender},</if>
+            <if test="birthDate != null">#{birthDate},</if>
+            <if test="phoneNumber != null and phoneNumber != ''">#{phoneNumber},</if>
+            <if test="provinceId != null">#{provinceId},</if>
+            <if test="cityId != null">#{cityId},</if>
+            <if test="districtId != null">#{districtId},</if>
+            <if test="streetId != null">#{streetId},</if>
+            <if test="communityId != null">#{communityId},</if>
+            <if test="detailAddress != null and detailAddress != ''">#{detailAddress},</if>
+            <if test="appointmentSiteId != null">#{appointmentSiteId},</if>
+            <if test="surveyorId != null">#{surveyorId},</if>
+            <if test="isFocusGroup != null">#{isFocusGroup},</if>
+            <if test="registrationType != null and registrationType != ''">#{registrationType},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        )
+    </insert>
+
+    <update id="updateResident" parameterType="com.javaxiaobear.module.gc.domain.entity.GcResident">
+        update gc_resident
+        <set>
+            <if test="realName != null and realName != ''">real_name = #{realName},</if>
+            <if test="gender != null and gender != ''">gender = #{gender},</if>
+            <if test="birthDate != null">birth_date = #{birthDate},</if>
+            <if test="phoneNumber != null and phoneNumber != ''">phone_number = #{phoneNumber},</if>
+            <if test="provinceId != null">province_id = #{provinceId},</if>
+            <if test="cityId != null">city_id = #{cityId},</if>
+            <if test="districtId != null">district_id = #{districtId},</if>
+            <if test="streetId != null">street_id = #{streetId},</if>
+            <if test="communityId != null">community_id = #{communityId},</if>
+            <if test="detailAddress != null">detail_address = #{detailAddress},</if>
+            <if test="appointmentSiteId != null">appointment_site_id = #{appointmentSiteId},</if>
+            <if test="surveyorId != null">surveyor_id = #{surveyorId},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </set>
+        where resident_id = #{residentId}
+    </update>
+
+    <delete id="deleteResidentById" parameterType="Long">
+        delete from gc_resident where resident_id = #{residentId}
+    </delete>
+
+    <delete id="deleteResidentByIds" parameterType="Long">
+        delete from gc_resident where resident_id in
+        <foreach item="residentId" collection="array" open="(" separator="," close=")">
+            #{residentId}
+        </foreach>
+    </delete>
+
+    <select id="checkResidentHasQuestionnaire" parameterType="Long" resultType="int">
+        select count(1) from gc_questionnaire_record where resident_id = #{residentId}
+    </select>
+
+    <select id="checkResidentHasAppointment" parameterType="Long" resultType="int">
+        select count(1) from gc_blood_appointment where resident_id = #{residentId}
+    </select>
+
+    <update id="updateResidentFocusGroup">
+        update gc_resident set is_focus_group = #{isFocusGroup}, update_time = sysdate()
+        where resident_id = #{residentId}
+    </update>
+
+</mapper>

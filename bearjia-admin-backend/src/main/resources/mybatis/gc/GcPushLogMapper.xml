@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcPushLogMapper">
+    
+    <resultMap type="GcPushLog" id="GcPushLogResult">
+        <result property="logId"    column="log_id"    />
+        <result property="appointmentId"    column="appointment_id"    />
+        <result property="requestUrl"    column="request_url"    />
+        <result property="requestBody"    column="request_body"    />
+        <result property="responseCode"    column="response_code"    />
+        <result property="responseBody"    column="response_body"    />
+        <result property="pushStatus"    column="push_status"    />
+        <result property="retryTimes"    column="retry_times"    />
+        <result property="pushTime"    column="push_time"    />
+        <result property="costTime"    column="cost_time"    />
+        <result property="errorMessage"    column="error_message"    />
+        <result property="residentName"    column="resident_name"    />
+        <result property="siteName"    column="site_name"    />
+    </resultMap>
+
+    <sql id="selectPushLogVo">
+        select 
+            l.log_id, l.appointment_id, l.request_url, l.request_body,
+            l.response_code, l.response_body, l.push_status, l.retry_times,
+            l.push_time, l.cost_time, l.error_message,
+            r.resident_name,
+            s.site_name
+        from gc_push_log l
+        left join gc_blood_appointment a on l.appointment_id = a.appointment_id
+        left join gc_resident r on a.resident_id = r.resident_id
+        left join gc_sampling_site s on a.site_id = s.site_id
+    </sql>
+
+    <select id="selectPushLogList" parameterType="GcPushLog" resultMap="GcPushLogResult">
+        <include refid="selectPushLogVo"/>
+        <where>  
+            <if test="appointmentId != null">
+                and l.appointment_id = #{appointmentId}
+            </if>
+            <if test="pushStatus != null and pushStatus != ''">
+                and l.push_status = #{pushStatus}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(l.push_time,'%Y-%m-%d') &gt;= date_format(#{params.beginTime},'%Y-%m-%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(l.push_time,'%Y-%m-%d') &lt;= date_format(#{params.endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        order by l.push_time desc
+    </select>
+    
+    <select id="selectPushLogById" parameterType="Long" resultMap="GcPushLogResult">
+        <include refid="selectPushLogVo"/>
+        where l.log_id = #{logId}
+    </select>
+    
+    <select id="selectPushLogByAppointmentId" parameterType="Long" resultMap="GcPushLogResult">
+        <include refid="selectPushLogVo"/>
+        where l.appointment_id = #{appointmentId}
+        order by l.push_time desc
+    </select>
+    
+    <select id="selectLatestPushLog" parameterType="Long" resultMap="GcPushLogResult">
+        <include refid="selectPushLogVo"/>
+        where l.appointment_id = #{appointmentId}
+        order by l.push_time desc
+        limit 1
+    </select>
+        
+    <insert id="insertPushLog" parameterType="GcPushLog" useGeneratedKeys="true" keyProperty="logId">
+        insert into gc_push_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="appointmentId != null">appointment_id,</if>
+            <if test="requestUrl != null and requestUrl != ''">request_url,</if>
+            <if test="requestBody != null and requestBody != ''">request_body,</if>
+            <if test="responseCode != null">response_code,</if>
+            <if test="responseBody != null and responseBody != ''">response_body,</if>
+            <if test="pushStatus != null and pushStatus != ''">push_status,</if>
+            <if test="retryTimes != null">retry_times,</if>
+            <if test="costTime != null">cost_time,</if>
+            <if test="errorMessage != null and errorMessage != ''">error_message,</if>
+            push_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="appointmentId != null">#{appointmentId},</if>
+            <if test="requestUrl != null and requestUrl != ''">#{requestUrl},</if>
+            <if test="requestBody != null and requestBody != ''">#{requestBody},</if>
+            <if test="responseCode != null">#{responseCode},</if>
+            <if test="responseBody != null and responseBody != ''">#{responseBody},</if>
+            <if test="pushStatus != null and pushStatus != ''">#{pushStatus},</if>
+            <if test="retryTimes != null">#{retryTimes},</if>
+            <if test="costTime != null">#{costTime},</if>
+            <if test="errorMessage != null and errorMessage != ''">#{errorMessage},</if>
+            sysdate()
+         </trim>
+    </insert>
+
+    <delete id="deletePushLogById" parameterType="Long">
+        delete from gc_push_log where log_id = #{logId}
+    </delete>
+
+    <delete id="deletePushLogByIds" parameterType="Long">
+        delete from gc_push_log where log_id in 
+        <foreach item="logId" collection="array" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+</mapper>

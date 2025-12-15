@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcBloodAppointmentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BloodAppointmentResult" type="com.javaxiaobear.module.gc.domain.entity.GcBloodAppointment">
+        <id property="appointmentId" column="appointment_id"/>
+        <result property="residentId" column="resident_id"/>
+        <result property="appointmentSiteId" column="appointment_site_id"/>
+        <result property="appointmentDate" column="appointment_date"/>
+        <result property="appointmentPeriod" column="appointment_period"/>
+        <result property="appointmentStatus" column="appointment_status"/>
+        <result property="samplingStatus" column="sampling_status"/>
+        <result property="samplingTime" column="sampling_time"/>
+        <result property="samplerName" column="sampler_name"/>
+        <result property="sampleCode" column="sample_code"/>
+        <result property="isPushed" column="is_pushed"/>
+        <result property="pushTime" column="push_time"/>
+        <result property="pushStatus" column="push_status"/>
+        <result property="pushFailReason" column="push_fail_reason"/>
+        <result property="retryCount" column="retry_count"/>
+        <result property="cancelReason" column="cancel_reason"/>
+        <result property="operatorId" column="operator_id"/>
+        <result property="operatorName" column="operator_name"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <!-- VO结果映射 -->
+    <resultMap id="BloodAppointmentVOResult" type="com.javaxiaobear.module.gc.domain.vo.BloodAppointmentVO">
+        <id property="appointmentId" column="appointment_id"/>
+        <result property="residentId" column="resident_id"/>
+        <result property="residentName" column="resident_name"/>
+        <result property="idCardNo" column="id_card_no"/>
+        <result property="gender" column="gender"/>
+        <result property="age" column="age"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="fullRegionName" column="full_region_name"/>
+        <result property="appointmentSiteId" column="appointment_site_id"/>
+        <result property="siteName" column="site_name"/>
+        <result property="siteAddress" column="site_address"/>
+        <result property="appointmentDate" column="appointment_date"/>
+        <result property="appointmentPeriod" column="appointment_period"/>
+        <result property="appointmentStatus" column="appointment_status"/>
+        <result property="samplingStatus" column="sampling_status"/>
+        <result property="samplingTime" column="sampling_time"/>
+        <result property="samplerName" column="sampler_name"/>
+        <result property="sampleCode" column="sample_code"/>
+        <result property="isPushed" column="is_pushed"/>
+        <result property="pushTime" column="push_time"/>
+        <result property="pushStatus" column="push_status"/>
+        <result property="pushFailReason" column="push_fail_reason"/>
+        <result property="retryCount" column="retry_count"/>
+        <result property="cancelReason" column="cancel_reason"/>
+        <result property="operatorName" column="operator_name"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <!-- 基础查询SQL片段 -->
+    <sql id="selectAppointmentVo">
+        select 
+            ba.appointment_id,
+            ba.resident_id,
+            r.real_name as resident_name,
+            r.id_card_no,
+            r.gender,
+            r.age,
+            r.phone_number,
+            CONCAT(
+                IFNULL(p.region_name, ''),
+                IFNULL(c.region_name, ''),
+                IFNULL(d.region_name, ''),
+                IFNULL(s.region_name, ''),
+                IFNULL(cm.region_name, '')
+            ) as full_region_name,
+            ba.appointment_site_id,
+            site.site_name,
+            site.address as site_address,
+            ba.appointment_date,
+            ba.appointment_period,
+            ba.appointment_status,
+            ba.sampling_status,
+            ba.sampling_time,
+            ba.sampler_name,
+            ba.sample_code,
+            ba.is_pushed,
+            ba.push_time,
+            ba.push_status,
+            ba.push_fail_reason,
+            ba.retry_count,
+            ba.cancel_reason,
+            ba.operator_name,
+            ba.create_by,
+            ba.create_time,
+            ba.remark
+        from gc_blood_appointment ba
+        left join gc_resident r on ba.resident_id = r.resident_id
+        left join gc_region p on r.province_id = p.region_id
+        left join gc_region c on r.city_id = c.region_id
+        left join gc_region d on r.district_id = d.region_id
+        left join gc_region s on r.street_id = s.region_id
+        left join gc_region cm on r.community_id = cm.region_id
+        left join gc_sampling_site site on ba.appointment_site_id = site.site_id
+    </sql>
+
+    <!-- 查询预约列表 -->
+    <select id="selectAppointmentList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcBloodAppointment"
+            resultMap="BloodAppointmentVOResult">
+        <include refid="selectAppointmentVo"/>
+        <where>
+            <if test="residentId != null">
+                AND ba.resident_id = #{residentId}
+            </if>
+            <if test="appointmentSiteId != null">
+                AND ba.appointment_site_id = #{appointmentSiteId}
+            </if>
+            <if test="appointmentDate != null">
+                AND ba.appointment_date = #{appointmentDate}
+            </if>
+            <if test="appointmentPeriod != null and appointmentPeriod != ''">
+                AND ba.appointment_period = #{appointmentPeriod}
+            </if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">
+                AND ba.appointment_status = #{appointmentStatus}
+            </if>
+            <if test="samplingStatus != null and samplingStatus != ''">
+                AND ba.sampling_status = #{samplingStatus}
+            </if>
+            <if test="pushStatus != null and pushStatus != ''">
+                AND ba.push_status = #{pushStatus}
+            </if>
+        </where>
+        order by ba.appointment_date desc, ba.create_time desc
+    </select>
+
+    <!-- 查询预约详情 -->
+    <select id="selectAppointmentDetail" parameterType="Long" resultMap="BloodAppointmentVOResult">
+        <include refid="selectAppointmentVo"/>
+        where ba.appointment_id = #{appointmentId}
+    </select>
+
+    <!-- 新增预约 -->
+    <insert id="insertAppointment" parameterType="com.javaxiaobear.module.gc.domain.entity.GcBloodAppointment"
+            useGeneratedKeys="true" keyProperty="appointmentId">
+        insert into gc_blood_appointment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">resident_id,</if>
+            <if test="appointmentSiteId != null">appointment_site_id,</if>
+            <if test="appointmentDate != null">appointment_date,</if>
+            <if test="appointmentPeriod != null and appointmentPeriod != ''">appointment_period,</if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">appointment_status,</if>
+            <if test="samplingStatus != null and samplingStatus != ''">sampling_status,</if>
+            <if test="samplingTime != null">sampling_time,</if>
+            <if test="samplerName != null and samplerName != ''">sampler_name,</if>
+            <if test="sampleCode != null and sampleCode != ''">sample_code,</if>
+            <if test="isPushed != null">is_pushed,</if>
+            <if test="pushTime != null">push_time,</if>
+            <if test="pushStatus != null and pushStatus != ''">push_status,</if>
+            <if test="pushFailReason != null and pushFailReason != ''">push_fail_reason,</if>
+            <if test="retryCount != null">retry_count,</if>
+            <if test="cancelReason != null and cancelReason != ''">cancel_reason,</if>
+            <if test="operatorId != null">operator_id,</if>
+            <if test="operatorName != null and operatorName != ''">operator_name,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">#{residentId},</if>
+            <if test="appointmentSiteId != null">#{appointmentSiteId},</if>
+            <if test="appointmentDate != null">#{appointmentDate},</if>
+            <if test="appointmentPeriod != null and appointmentPeriod != ''">#{appointmentPeriod},</if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">#{appointmentStatus},</if>
+            <if test="samplingStatus != null and samplingStatus != ''">#{samplingStatus},</if>
+            <if test="samplingTime != null">#{samplingTime},</if>
+            <if test="samplerName != null and samplerName != ''">#{samplerName},</if>
+            <if test="sampleCode != null and sampleCode != ''">#{sampleCode},</if>
+            <if test="isPushed != null">#{isPushed},</if>
+            <if test="pushTime != null">#{pushTime},</if>
+            <if test="pushStatus != null and pushStatus != ''">#{pushStatus},</if>
+            <if test="pushFailReason != null and pushFailReason != ''">#{pushFailReason},</if>
+            <if test="retryCount != null">#{retryCount},</if>
+            <if test="cancelReason != null and cancelReason != ''">#{cancelReason},</if>
+            <if test="operatorId != null">#{operatorId},</if>
+            <if test="operatorName != null and operatorName != ''">#{operatorName},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <!-- 修改预约 -->
+    <update id="updateAppointment" parameterType="com.javaxiaobear.module.gc.domain.entity.GcBloodAppointment">
+        update gc_blood_appointment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="residentId != null">resident_id = #{residentId},</if>
+            <if test="appointmentSiteId != null">appointment_site_id = #{appointmentSiteId},</if>
+            <if test="appointmentDate != null">appointment_date = #{appointmentDate},</if>
+            <if test="appointmentPeriod != null and appointmentPeriod != ''">appointment_period = #{appointmentPeriod},</if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">appointment_status = #{appointmentStatus},</if>
+            <if test="samplingStatus != null and samplingStatus != ''">sampling_status = #{samplingStatus},</if>
+            <if test="samplingTime != null">sampling_time = #{samplingTime},</if>
+            <if test="samplerName != null and samplerName != ''">sampler_name = #{samplerName},</if>
+            <if test="sampleCode != null and sampleCode != ''">sample_code = #{sampleCode},</if>
+            <if test="isPushed != null">is_pushed = #{isPushed},</if>
+            <if test="pushTime != null">push_time = #{pushTime},</if>
+            <if test="pushStatus != null and pushStatus != ''">push_status = #{pushStatus},</if>
+            <if test="pushFailReason != null and pushFailReason != ''">push_fail_reason = #{pushFailReason},</if>
+            <if test="retryCount != null">retry_count = #{retryCount},</if>
+            <if test="cancelReason != null and cancelReason != ''">cancel_reason = #{cancelReason},</if>
+            <if test="operatorId != null">operator_id = #{operatorId},</if>
+            <if test="operatorName != null and operatorName != ''">operator_name = #{operatorName},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = now(),
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where appointment_id = #{appointmentId}
+    </update>
+
+    <!-- 删除预约 -->
+    <delete id="deleteAppointmentById" parameterType="Long">
+        delete from gc_blood_appointment where appointment_id = #{appointmentId}
+    </delete>
+
+    <!-- 批量删除预约 -->
+    <delete id="deleteAppointmentByIds" parameterType="Long">
+        delete from gc_blood_appointment where appointment_id in
+        <foreach collection="array" item="appointmentId" open="(" separator="," close=")">
+            #{appointmentId}
+        </foreach>
+    </delete>
+
+    <!-- 检查时间冲突 -->
+    <select id="checkTimeConflict" resultType="int">
+        select count(1) from gc_blood_appointment
+        where resident_id = #{residentId}
+        and appointment_date = #{appointmentDate}
+        and appointment_period = #{appointmentPeriod}
+        and appointment_status in ('0', '1')
+        <if test="appointmentId != null">
+            and appointment_id != #{appointmentId}
+        </if>
+    </select>
+
+    <!-- 更新预约状态 -->
+    <update id="updateAppointmentStatus">
+        update gc_blood_appointment
+        set appointment_status = #{appointmentStatus},
+            operator_id = #{operatorId},
+            operator_name = #{operatorName},
+            update_time = now()
+        where appointment_id = #{appointmentId}
+    </update>
+
+    <!-- 更新采样状态 -->
+    <update id="updateSamplingStatus">
+        update gc_blood_appointment
+        set sampling_status = #{samplingStatus},
+            sampling_time = #{samplingTime},
+            sampler_name = #{samplerName},
+            sample_code = #{sampleCode},
+            appointment_status = '2',
+            update_time = now()
+        where appointment_id = #{appointmentId}
+    </update>
+
+    <!-- 更新推送状态 -->
+    <update id="updatePushStatus">
+        update gc_blood_appointment
+        set is_pushed = #{isPushed},
+            push_time = #{pushTime},
+            push_status = #{pushStatus},
+            <if test="pushFailReason != null and pushFailReason != ''">
+                push_fail_reason = #{pushFailReason},
+            </if>
+            <if test="retryCount != null">
+                retry_count = #{retryCount},
+            </if>
+            update_time = now()
+        where appointment_id = #{appointmentId}
+    </update>
+
+    <!-- 查询待推送的预约列表 -->
+    <select id="selectPendingPushAppointments" resultMap="BloodAppointmentResult">
+        select * from gc_blood_appointment
+        where appointment_status = '1'
+        and (is_pushed = 0 or is_pushed is null)
+        order by appointment_date asc
+    </select>
+
+    <!-- 查询推送失败且重试次数<3的预约列表 -->
+    <select id="selectFailedPushAppointments" resultMap="BloodAppointmentResult">
+        select * from gc_blood_appointment
+        where push_status = '2'
+        and retry_count &lt; 3
+        order by push_time asc
+    </select>
+
+    <!-- 统计指定采血点的预约数量 -->
+    <select id="countAppointmentsBySite" resultType="int">
+        select count(1) from gc_blood_appointment
+        where appointment_site_id = #{siteId}
+        and appointment_status in ('0', '1', '2')
+        <if test="startDate != null">
+            and appointment_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            and appointment_date &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- 统计指定区域的采样完成数量 -->
+    <select id="countSamplingByRegion" resultType="int">
+        select count(1)
+        from gc_blood_appointment ba
+        join gc_resident r on ba.resident_id = r.resident_id
+        where ba.sampling_status = '1'
+        <if test="regionLevel == 3">
+            and r.district_id = #{regionId}
+        </if>
+        <if test="regionLevel == 4">
+            and r.street_id = #{regionId}
+        </if>
+        <if test="regionLevel == 5">
+            and r.community_id = #{regionId}
+        </if>
+        <if test="startDate != null">
+            and ba.sampling_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            and ba.sampling_time &lt;= #{endDate}
+        </if>
+    </select>
+
+</mapper>

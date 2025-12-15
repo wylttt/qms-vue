@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcRegionMapper">
+    
+    <resultMap type="com.javaxiaobear.module.gc.domain.GcRegion" id="GcRegionResult">
+        <result property="regionId"    column="region_id"    />
+        <result property="regionName"    column="region_name"    />
+        <result property="regionCode"    column="region_code"    />
+        <result property="regionLevel"    column="region_level"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="status"    column="status"    />
+        <result property="sortOrder"    column="sort_order"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectGcRegionVo">
+        select region_id, region_name, region_code, region_level, parent_id, status, sort_order, create_by, create_time, update_by, update_time, remark from gc_region
+    </sql>
+
+    <select id="selectGcRegionList" parameterType="com.javaxiaobear.module.gc.domain.GcRegion" resultMap="GcRegionResult">
+        <include refid="selectGcRegionVo"/>
+        <where>  
+            <if test="regionName != null  and regionName != ''"> and region_name like concat('%', #{regionName}, '%')</if>
+            <if test="regionCode != null  and regionCode != ''"> and region_code = #{regionCode}</if>
+            <if test="regionLevel != null "> and region_level = #{regionLevel}</if>
+            <if test="parentId != null "> and parent_id = #{parentId}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+        order by region_level, sort_order
+    </select>
+    
+    <select id="selectGcRegionByRegionId" parameterType="Long" resultMap="GcRegionResult">
+        <include refid="selectGcRegionVo"/>
+        where region_id = #{regionId}
+    </select>
+    
+    <select id="selectByLevel" parameterType="Integer" resultMap="GcRegionResult">
+        <include refid="selectGcRegionVo"/>
+        where region_level = #{regionLevel} and status = '0'
+        order by sort_order
+    </select>
+    
+    <select id="selectByParentId" parameterType="Long" resultMap="GcRegionResult">
+        <include refid="selectGcRegionVo"/>
+        where parent_id = #{parentId} and status = '0'
+        order by sort_order
+    </select>
+    
+    <select id="selectByRegionCode" parameterType="String" resultMap="GcRegionResult">
+        <include refid="selectGcRegionVo"/>
+        where region_code = #{regionCode}
+    </select>
+    
+    <select id="checkRegionCodeUnique" parameterType="String" resultType="int">
+        select count(1) from gc_region where region_code = #{regionCode}
+    </select>
+    
+    <select id="hasChildByRegionId" parameterType="Long" resultType="int">
+        select count(1) from gc_region where parent_id = #{regionId}
+    </select>
+        
+    <insert id="insertGcRegion" parameterType="com.javaxiaobear.module.gc.domain.GcRegion" useGeneratedKeys="true" keyProperty="regionId">
+        insert into gc_region
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="regionName != null and regionName != ''">region_name,</if>
+            <if test="regionCode != null and regionCode != ''">region_code,</if>
+            <if test="regionLevel != null">region_level,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="status != null">status,</if>
+            <if test="sortOrder != null">sort_order,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="regionName != null and regionName != ''">#{regionName},</if>
+            <if test="regionCode != null and regionCode != ''">#{regionCode},</if>
+            <if test="regionLevel != null">#{regionLevel},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="status != null">#{status},</if>
+            <if test="sortOrder != null">#{sortOrder},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+         </trim>
+    </insert>
+
+    <update id="updateGcRegion" parameterType="com.javaxiaobear.module.gc.domain.GcRegion">
+        update gc_region
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="regionName != null and regionName != ''">region_name = #{regionName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where region_id = #{regionId}
+    </update>
+
+    <delete id="deleteGcRegionByRegionId" parameterType="Long">
+        delete from gc_region where region_id = #{regionId}
+    </delete>
+
+    <delete id="deleteGcRegionByRegionIds" parameterType="Long">
+        delete from gc_region where region_id in 
+        <foreach item="regionId" collection="array" open="(" separator="," close=")">
+            #{regionId}
+        </foreach>
+    </delete>
+</mapper>

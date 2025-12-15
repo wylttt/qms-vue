@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcTaskMapper">
+    
+    <resultMap type="GcTask" id="GcTaskResult">
+        <id     property="taskId"       column="task_id"        />
+        <result property="taskName"     column="task_name"      />
+        <result property="taskCode"     column="task_code"      />
+        <result property="taskType"     column="task_type"      />
+        <result property="regionId"     column="region_id"      />
+        <result property="targetCount"  column="target_count"   />
+        <result property="startTime"    column="start_time"     />
+        <result property="endTime"      column="end_time"       />
+        <result property="description"  column="description"    />
+        <result property="status"       column="status"         />
+        <result property="createBy"     column="create_by"      />
+        <result property="createTime"   column="create_time"    />
+        <result property="updateBy"     column="update_by"      />
+        <result property="updateTime"   column="update_time"    />
+    </resultMap>
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.vo.TaskProgressVO" id="TaskProgressVOResult">
+        <result property="taskId"           column="task_id"            />
+        <result property="taskName"         column="task_name"          />
+        <result property="taskType"         column="task_type"          />
+        <result property="regionId"         column="region_id"          />
+        <result property="regionName"       column="region_name"        />
+        <result property="targetCount"      column="target_count"       />
+        <result property="completedCount"   column="completed_count"    />
+        <result property="completionRate"   column="completion_rate"    />
+        <result property="status"           column="status"             />
+    </resultMap>
+
+    <sql id="selectTaskVo">
+        select task_id, task_name, task_code, task_type, region_id,
+               target_count, start_time, end_time, description, status,
+               create_by, create_time, update_by, update_time
+        from gc_task
+    </sql>
+
+    <select id="selectTaskList" parameterType="GcTask" resultMap="GcTaskResult">
+        <include refid="selectTaskVo"/>
+        <where>  
+            <if test="taskName != null and taskName != ''">
+                AND task_name like concat('%', #{taskName}, '%')
+            </if>
+            <if test="taskCode != null and taskCode != ''">
+                AND task_code = #{taskCode}
+            </if>
+            <if test="taskType != null and taskType != ''">
+                AND task_type = #{taskType}
+            </if>
+            <if test="regionId != null">
+                AND region_id = #{regionId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+    
+    <select id="selectTaskById" parameterType="Long" resultMap="GcTaskResult">
+        <include refid="selectTaskVo"/>
+        where task_id = #{taskId}
+    </select>
+
+    <select id="selectTaskByCode" parameterType="String" resultMap="GcTaskResult">
+        <include refid="selectTaskVo"/>
+        where task_code = #{taskCode}
+    </select>
+        
+    <insert id="insertTask" parameterType="GcTask" useGeneratedKeys="true" keyProperty="taskId">
+        insert into gc_task
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskName != null and taskName != ''">task_name,</if>
+            <if test="taskCode != null and taskCode != ''">task_code,</if>
+            <if test="taskType != null and taskType != ''">task_type,</if>
+            <if test="regionId != null">region_id,</if>
+            <if test="targetCount != null">target_count,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="description != null and description != ''">description,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskName != null and taskName != ''">#{taskName},</if>
+            <if test="taskCode != null and taskCode != ''">#{taskCode},</if>
+            <if test="taskType != null and taskType != ''">#{taskType},</if>
+            <if test="regionId != null">#{regionId},</if>
+            <if test="targetCount != null">#{targetCount},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="description != null and description != ''">#{description},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            now()
+        </trim>
+    </insert>
+
+    <update id="updateTask" parameterType="GcTask">
+        update gc_task
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskName != null and taskName != ''">task_name = #{taskName},</if>
+            <if test="targetCount != null">target_count = #{targetCount},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = now()
+        </trim>
+        where task_id = #{taskId}
+    </update>
+
+    <delete id="deleteTaskById" parameterType="Long">
+        delete from gc_task where task_id = #{taskId}
+    </delete>
+
+    <delete id="deleteTaskByIds" parameterType="Long">
+        delete from gc_task where task_id in
+        <foreach item="taskId" collection="array" open="(" separator="," close=")">
+            #{taskId}
+        </foreach>
+    </delete>
+
+    <!-- 任务进度统计查询 -->
+    <select id="selectTaskProgress" parameterType="GcTask" resultMap="TaskProgressVOResult">
+        select 
+            t.task_id,
+            t.task_name,
+            t.task_type,
+            t.region_id,
+            r.region_name,
+            t.target_count,
+            case 
+                when t.task_type = 'questionnaire' then (
+                    select count(*) from gc_questionnaire_record qr
+                    join gc_resident res on qr.resident_id = res.resident_id
+                    join gc_region reg on 
+                        (reg.region_id = t.region_id or reg.parent_id = t.region_id)
+                        and (res.district = reg.region_name or res.street = reg.region_name)
+                    where qr.create_time between t.start_time and t.end_time
+                )
+                when t.task_type = 'blood' then (
+                    select count(*) from gc_resident res
+                    join gc_region reg on 
+                        (reg.region_id = t.region_id or reg.parent_id = t.region_id)
+                        and (res.district = reg.region_name or res.street = reg.region_name)
+                    where res.sampling_status = '1'
+                        and res.create_time between t.start_time and t.end_time
+                )
+                else 0
+            end as completed_count,
+            case 
+                when t.target_count > 0 then
+                    round(
+                        case 
+                            when t.task_type = 'questionnaire' then (
+                                select count(*) from gc_questionnaire_record qr
+                                join gc_resident res on qr.resident_id = res.resident_id
+                                join gc_region reg on 
+                                    (reg.region_id = t.region_id or reg.parent_id = t.region_id)
+                                    and (res.district = reg.region_name or res.street = reg.region_name)
+                                where qr.create_time between t.start_time and t.end_time
+                            )
+                            when t.task_type = 'blood' then (
+                                select count(*) from gc_resident res
+                                join gc_region reg on 
+                                    (reg.region_id = t.region_id or reg.parent_id = t.region_id)
+                                    and (res.district = reg.region_name or res.street = reg.region_name)
+                                where res.sampling_status = '1'
+                                    and res.create_time between t.start_time and t.end_time
+                            )
+                            else 0
+                        end * 100.0 / t.target_count, 2
+                    )
+                else 0
+            end as completion_rate,
+            t.status
+        from gc_task t
+        left join gc_region r on t.region_id = r.region_id
+        <where>
+            <if test="taskType != null and taskType != ''">
+                AND t.task_type = #{taskType}
+            </if>
+            <if test="regionId != null">
+                AND t.region_id = #{regionId}
+            </if>
+            <if test="status != null and status != ''">
+                AND t.status = #{status}
+            </if>
+        </where>
+        order by t.create_time desc
+    </select>
+
+    <!-- 根据区域ID查询任务进度统计(含下级区域汇总) -->
+    <select id="selectTaskProgressByRegion" resultMap="TaskProgressVOResult">
+        select 
+            t.task_id,
+            t.task_name,
+            t.task_type,
+            t.region_id,
+            r.region_name,
+            t.target_count,
+            case 
+                when t.task_type = 'questionnaire' then (
+                    select count(*) from gc_questionnaire_record qr
+                    join gc_resident res on qr.resident_id = res.resident_id
+                    join gc_region reg on 
+                        reg.region_id in (
+                            select region_id from gc_region 
+                            where region_id = #{regionId} 
+                               or parent_id = #{regionId}
+                        )
+                        and (res.district = reg.region_name or res.street = reg.region_name)
+                    where qr.create_time between t.start_time and t.end_time
+                )
+                when t.task_type = 'blood' then (
+                    select count(*) from gc_resident res
+                    join gc_region reg on 
+                        reg.region_id in (
+                            select region_id from gc_region 
+                            where region_id = #{regionId} 
+                               or parent_id = #{regionId}
+                        )
+                        and (res.district = reg.region_name or res.street = reg.region_name)
+                    where res.sampling_status = '1'
+                        and res.create_time between t.start_time and t.end_time
+                )
+                else 0
+            end as completed_count,
+            case 
+                when t.target_count > 0 then
+                    round(
+                        case 
+                            when t.task_type = 'questionnaire' then (
+                                select count(*) from gc_questionnaire_record qr
+                                join gc_resident res on qr.resident_id = res.resident_id
+                                join gc_region reg on 
+                                    reg.region_id in (
+                                        select region_id from gc_region 
+                                        where region_id = #{regionId} 
+                                           or parent_id = #{regionId}
+                                    )
+                                    and (res.district = reg.region_name or res.street = reg.region_name)
+                                where qr.create_time between t.start_time and t.end_time
+                            )
+                            when t.task_type = 'blood' then (
+                                select count(*) from gc_resident res
+                                join gc_region reg on 
+                                    reg.region_id in (
+                                        select region_id from gc_region 
+                                        where region_id = #{regionId} 
+                                           or parent_id = #{regionId}
+                                    )
+                                    and (res.district = reg.region_name or res.street = reg.region_name)
+                                where res.sampling_status = '1'
+                                    and res.create_time between t.start_time and t.end_time
+                            )
+                            else 0
+                        end * 100.0 / t.target_count, 2
+                    )
+                else 0
+            end as completion_rate,
+            t.status
+        from gc_task t
+        left join gc_region r on t.region_id = r.region_id
+        where t.region_id in (
+            select region_id from gc_region 
+            where region_id = #{regionId} 
+               or parent_id = #{regionId}
+        )
+        <if test="taskType != null and taskType != ''">
+            AND t.task_type = #{taskType}
+        </if>
+        order by t.create_time desc
+    </select>
+
+</mapper>

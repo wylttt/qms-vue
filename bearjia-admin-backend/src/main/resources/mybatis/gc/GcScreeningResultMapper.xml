@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcScreeningResultMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ScreeningResultResult" type="com.javaxiaobear.module.gc.domain.entity.GcScreeningResult">
+        <id property="resultId" column="result_id"/>
+        <result property="residentId" column="resident_id"/>
+        <result property="appointmentId" column="appointment_id"/>
+        <result property="screeningType" column="screening_type"/>
+        <result property="bloodResult" column="blood_result"/>
+        <result property="bloodResultDetail" column="blood_result_detail"/>
+        <result property="bloodTestDate" column="blood_test_date"/>
+        <result property="bloodTestInstitution" column="blood_test_institution"/>
+        <result property="gastroscopyResult" column="gastroscopy_result"/>
+        <result property="gastroscopyResultDetail" column="gastroscopy_result_detail"/>
+        <result property="gastroscopyTestDate" column="gastroscopy_test_date"/>
+        <result property="gastroscopyTestInstitution" column="gastroscopy_test_institution"/>
+        <result property="riskLevel" column="risk_level"/>
+        <result property="needFollowUp" column="need_follow_up"/>
+        <result property="doctorAdvice" column="doctor_advice"/>
+        <result property="inputUserId" column="input_user_id"/>
+        <result property="inputUserName" column="input_user_name"/>
+        <result property="reviewUserId" column="review_user_id"/>
+        <result property="reviewUserName" column="review_user_name"/>
+        <result property="reviewTime" column="review_time"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <!-- VO结果映射 -->
+    <resultMap id="ScreeningResultVOResult" type="com.javaxiaobear.module.gc.domain.vo.ScreeningResultVO">
+        <id property="resultId" column="result_id"/>
+        <result property="residentId" column="resident_id"/>
+        <result property="residentName" column="resident_name"/>
+        <result property="idCardNo" column="id_card_no"/>
+        <result property="gender" column="gender"/>
+        <result property="age" column="age"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="fullRegionName" column="full_region_name"/>
+        <result property="appointmentId" column="appointment_id"/>
+        <result property="siteName" column="site_name"/>
+        <result property="screeningType" column="screening_type"/>
+        <result property="bloodResult" column="blood_result"/>
+        <result property="bloodResultDetail" column="blood_result_detail"/>
+        <result property="bloodTestDate" column="blood_test_date"/>
+        <result property="bloodTestInstitution" column="blood_test_institution"/>
+        <result property="gastroscopyResult" column="gastroscopy_result"/>
+        <result property="gastroscopyResultDetail" column="gastroscopy_result_detail"/>
+        <result property="gastroscopyTestDate" column="gastroscopy_test_date"/>
+        <result property="gastroscopyTestInstitution" column="gastroscopy_test_institution"/>
+        <result property="riskLevel" column="risk_level"/>
+        <result property="needFollowUp" column="need_follow_up"/>
+        <result property="doctorAdvice" column="doctor_advice"/>
+        <result property="inputUserName" column="input_user_name"/>
+        <result property="reviewUserName" column="review_user_name"/>
+        <result property="reviewTime" column="review_time"/>
+        <result property="reviewStatus" column="review_status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <!-- 基础查询SQL片段 -->
+    <sql id="selectScreeningResultVo">
+        select 
+            sr.result_id,
+            sr.resident_id,
+            r.real_name as resident_name,
+            r.id_card_no,
+            r.gender,
+            r.age,
+            r.phone_number,
+            CONCAT(
+                IFNULL(p.region_name, ''),
+                IFNULL(c.region_name, ''),
+                IFNULL(d.region_name, ''),
+                IFNULL(s.region_name, ''),
+                IFNULL(cm.region_name, '')
+            ) as full_region_name,
+            sr.appointment_id,
+            site.site_name,
+            sr.screening_type,
+            sr.blood_result,
+            sr.blood_result_detail,
+            sr.blood_test_date,
+            sr.blood_test_institution,
+            sr.gastroscopy_result,
+            sr.gastroscopy_result_detail,
+            sr.gastroscopy_test_date,
+            sr.gastroscopy_test_institution,
+            sr.risk_level,
+            sr.need_follow_up,
+            sr.doctor_advice,
+            sr.input_user_name,
+            sr.review_user_name,
+            sr.review_time,
+            sr.review_status,
+            sr.create_time,
+            sr.remark
+        from gc_screening_result sr
+        left join gc_resident r on sr.resident_id = r.resident_id
+        left join gc_region p on r.province_id = p.region_id
+        left join gc_region c on r.city_id = c.region_id
+        left join gc_region d on r.district_id = d.region_id
+        left join gc_region s on r.street_id = s.region_id
+        left join gc_region cm on r.community_id = cm.region_id
+        left join gc_blood_appointment ba on sr.appointment_id = ba.appointment_id
+        left join gc_sampling_site site on ba.appointment_site_id = site.site_id
+    </sql>
+
+    <!-- 查询筛查结果列表 -->
+    <select id="selectScreeningResultList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcScreeningResult"
+            resultMap="ScreeningResultVOResult">
+        <include refid="selectScreeningResultVo"/>
+        <where>
+            <if test="residentId != null">
+                AND sr.resident_id = #{residentId}
+            </if>
+            <if test="appointmentId != null">
+                AND sr.appointment_id = #{appointmentId}
+            </if>
+            <if test="screeningType != null and screeningType != ''">
+                AND sr.screening_type = #{screeningType}
+            </if>
+            <if test="bloodResult != null and bloodResult != ''">
+                AND sr.blood_result = #{bloodResult}
+            </if>
+            <if test="riskLevel != null and riskLevel != ''">
+                AND sr.risk_level = #{riskLevel}
+            </if>
+            <if test="needFollowUp != null">
+                AND sr.need_follow_up = #{needFollowUp}
+            </if>
+            <if test="reviewStatus != null and reviewStatus != ''">
+                AND sr.review_status = #{reviewStatus}
+            </if>
+        </where>
+        order by sr.create_time desc
+    </select>
+
+    <!-- 查询筛查结果详情 -->
+    <select id="selectScreeningResultDetail" parameterType="Long" resultMap="ScreeningResultVOResult">
+        <include refid="selectScreeningResultVo"/>
+        where sr.result_id = #{resultId}
+    </select>
+
+    <!-- 新增筛查结果 -->
+    <insert id="insertScreeningResult" parameterType="com.javaxiaobear.module.gc.domain.entity.GcScreeningResult"
+            useGeneratedKeys="true" keyProperty="resultId">
+        insert into gc_screening_result
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">resident_id,</if>
+            <if test="appointmentId != null">appointment_id,</if>
+            <if test="screeningType != null and screeningType != ''">screening_type,</if>
+            <if test="bloodResult != null and bloodResult != ''">blood_result,</if>
+            <if test="bloodResultDetail != null and bloodResultDetail != ''">blood_result_detail,</if>
+            <if test="bloodTestDate != null">blood_test_date,</if>
+            <if test="bloodTestInstitution != null and bloodTestInstitution != ''">blood_test_institution,</if>
+            <if test="gastroscopyResult != null and gastroscopyResult != ''">gastroscopy_result,</if>
+            <if test="gastroscopyResultDetail != null and gastroscopyResultDetail != ''">gastroscopy_result_detail,</if>
+            <if test="gastroscopyTestDate != null">gastroscopy_test_date,</if>
+            <if test="gastroscopyTestInstitution != null and gastroscopyTestInstitution != ''">gastroscopy_test_institution,</if>
+            <if test="riskLevel != null and riskLevel != ''">risk_level,</if>
+            <if test="needFollowUp != null">need_follow_up,</if>
+            <if test="doctorAdvice != null and doctorAdvice != ''">doctor_advice,</if>
+            <if test="inputUserId != null">input_user_id,</if>
+            <if test="inputUserName != null and inputUserName != ''">input_user_name,</if>
+            <if test="reviewUserId != null">review_user_id,</if>
+            <if test="reviewUserName != null and reviewUserName != ''">review_user_name,</if>
+            <if test="reviewTime != null">review_time,</if>
+            <if test="reviewStatus != null and reviewStatus != ''">review_status,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">#{residentId},</if>
+            <if test="appointmentId != null">#{appointmentId},</if>
+            <if test="screeningType != null and screeningType != ''">#{screeningType},</if>
+            <if test="bloodResult != null and bloodResult != ''">#{bloodResult},</if>
+            <if test="bloodResultDetail != null and bloodResultDetail != ''">#{bloodResultDetail},</if>
+            <if test="bloodTestDate != null">#{bloodTestDate},</if>
+            <if test="bloodTestInstitution != null and bloodTestInstitution != ''">#{bloodTestInstitution},</if>
+            <if test="gastroscopyResult != null and gastroscopyResult != ''">#{gastroscopyResult},</if>
+            <if test="gastroscopyResultDetail != null and gastroscopyResultDetail != ''">#{gastroscopyResultDetail},</if>
+            <if test="gastroscopyTestDate != null">#{gastroscopyTestDate},</if>
+            <if test="gastroscopyTestInstitution != null and gastroscopyTestInstitution != ''">#{gastroscopyTestInstitution},</if>
+            <if test="riskLevel != null and riskLevel != ''">#{riskLevel},</if>
+            <if test="needFollowUp != null">#{needFollowUp},</if>
+            <if test="doctorAdvice != null and doctorAdvice != ''">#{doctorAdvice},</if>
+            <if test="inputUserId != null">#{inputUserId},</if>
+            <if test="inputUserName != null and inputUserName != ''">#{inputUserName},</if>
+            <if test="reviewUserId != null">#{reviewUserId},</if>
+            <if test="reviewUserName != null and reviewUserName != ''">#{reviewUserName},</if>
+            <if test="reviewTime != null">#{reviewTime},</if>
+            <if test="reviewStatus != null and reviewStatus != ''">#{reviewStatus},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <!-- 修改筛查结果 -->
+    <update id="updateScreeningResult" parameterType="com.javaxiaobear.module.gc.domain.entity.GcScreeningResult">
+        update gc_screening_result
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="residentId != null">resident_id = #{residentId},</if>
+            <if test="appointmentId != null">appointment_id = #{appointmentId},</if>
+            <if test="screeningType != null and screeningType != ''">screening_type = #{screeningType},</if>
+            <if test="bloodResult != null and bloodResult != ''">blood_result = #{bloodResult},</if>
+            <if test="bloodResultDetail != null and bloodResultDetail != ''">blood_result_detail = #{bloodResultDetail},</if>
+            <if test="bloodTestDate != null">blood_test_date = #{bloodTestDate},</if>
+            <if test="bloodTestInstitution != null and bloodTestInstitution != ''">blood_test_institution = #{bloodTestInstitution},</if>
+            <if test="gastroscopyResult != null and gastroscopyResult != ''">gastroscopy_result = #{gastroscopyResult},</if>
+            <if test="gastroscopyResultDetail != null and gastroscopyResultDetail != ''">gastroscopy_result_detail = #{gastroscopyResultDetail},</if>
+            <if test="gastroscopyTestDate != null">gastroscopy_test_date = #{gastroscopyTestDate},</if>
+            <if test="gastroscopyTestInstitution != null and gastroscopyTestInstitution != ''">gastroscopy_test_institution = #{gastroscopyTestInstitution},</if>
+            <if test="riskLevel != null and riskLevel != ''">risk_level = #{riskLevel},</if>
+            <if test="needFollowUp != null">need_follow_up = #{needFollowUp},</if>
+            <if test="doctorAdvice != null and doctorAdvice != ''">doctor_advice = #{doctorAdvice},</if>
+            <if test="reviewUserId != null">review_user_id = #{reviewUserId},</if>
+            <if test="reviewUserName != null and reviewUserName != ''">review_user_name = #{reviewUserName},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            <if test="reviewStatus != null and reviewStatus != ''">review_status = #{reviewStatus},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+        </trim>
+        where result_id = #{resultId}
+    </update>
+
+    <!-- 删除筛查结果 -->
+    <delete id="deleteScreeningResultById" parameterType="Long">
+        delete from gc_screening_result where result_id = #{resultId}
+    </delete>
+
+    <!-- 批量删除筛查结果 -->
+    <delete id="deleteScreeningResultByIds" parameterType="Long">
+        delete from gc_screening_result where result_id in
+        <foreach collection="resultIds" item="resultId" open="(" separator="," close=")">
+            #{resultId}
+        </foreach>
+    </delete>
+
+    <!-- 更新审核状态 -->
+    <update id="updateReviewStatus">
+        update gc_screening_result
+        set review_status = #{reviewStatus},
+            review_user_id = #{reviewUserId},
+            review_user_name = #{reviewUserName},
+            review_time = #{reviewTime}
+        where result_id = #{resultId}
+    </update>
+
+    <!-- 根据预约ID查询筛查结果 -->
+    <select id="selectByAppointmentId" parameterType="Long" resultMap="ScreeningResultResult">
+        select * from gc_screening_result where appointment_id = #{appointmentId}
+    </select>
+
+    <!-- 根据居民ID查询筛查结果列表 -->
+    <select id="selectByResidentId" parameterType="Long" resultMap="ScreeningResultVOResult">
+        <include refid="selectScreeningResultVo"/>
+        where sr.resident_id = #{residentId}
+        order by sr.create_time desc
+    </select>
+
+    <!-- 统计高风险人数 -->
+    <select id="countHighRisk" resultType="int">
+        select count(distinct sr.resident_id)
+        from gc_screening_result sr
+        left join gc_resident r on sr.resident_id = r.resident_id
+        where sr.risk_level = '3'
+        <if test="regionId != null and regionLevel != null">
+            <choose>
+                <when test="regionLevel == 3">
+                    and r.district_id = #{regionId}
+                </when>
+                <when test="regionLevel == 4">
+                    and r.street_id = #{regionId}
+                </when>
+                <when test="regionLevel == 5">
+                    and r.community_id = #{regionId}
+                </when>
+            </choose>
+        </if>
+        <if test="startDate != null and endDate != null">
+            and sr.create_time between #{startDate} and #{endDate}
+        </if>
+    </select>
+
+    <!-- 统计待审核结果数量 -->
+    <select id="countPendingReview" resultType="int">
+        select count(1)
+        from gc_screening_result sr
+        left join gc_resident r on sr.resident_id = r.resident_id
+        where sr.review_status = '0'
+        <if test="regionId != null and regionLevel != null">
+            <choose>
+                <when test="regionLevel == 3">
+                    and r.district_id = #{regionId}
+                </when>
+                <when test="regionLevel == 4">
+                    and r.street_id = #{regionId}
+                </when>
+                <when test="regionLevel == 5">
+                    and r.community_id = #{regionId}
+                </when>
+            </choose>
+        </if>
+    </select>
+
+    <!-- 统计各风险等级人数 -->
+    <select id="countByRiskLevel" resultType="map">
+        select 
+            sr.risk_level,
+            count(distinct sr.resident_id) as count
+        from gc_screening_result sr
+        left join gc_resident r on sr.resident_id = r.resident_id
+        where 1=1
+        <if test="regionId != null and regionLevel != null">
+            <choose>
+                <when test="regionLevel == 3">
+                    and r.district_id = #{regionId}
+                </when>
+                <when test="regionLevel == 4">
+                    and r.street_id = #{regionId}
+                </when>
+                <when test="regionLevel == 5">
+                    and r.community_id = #{regionId}
+                </when>
+            </choose>
+        </if>
+        <if test="startDate != null and endDate != null">
+            and sr.create_time between #{startDate} and #{endDate}
+        </if>
+        group by sr.risk_level
+    </select>
+</mapper>

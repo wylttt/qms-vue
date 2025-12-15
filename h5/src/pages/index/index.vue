@@ -3,6 +3,19 @@
     <!-- 状态栏占位（安全区域适配） -->
     <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
     
+    <!-- 网络状态提示 -->
+    <view v-if="!isOnline" class="network-tip offline">
+      <text class="tip-icon">⚠️</text>
+      <text class="tip-text">网络未连接，当前为离线模式</text>
+    </view>
+    
+    <!-- 未同步草稿提示 -->
+    <view v-if="unsyncedCount > 0" class="network-tip unsynced" @click="handleSync">
+      <text class="tip-icon">💾</text>
+      <text class="tip-text">有 {{ unsyncedCount }} 个草稿待同步</text>
+      <text class="tip-action">点击同步</text>
+    </view>
+    
     <!-- 顶部背景图 -->
     <view class="header-banner">
       <image class="banner-image" src="/static/header-banner-jiujiang.png" mode="widthFix"></image>
@@ -69,15 +82,36 @@
 </template>
 
 <script>
+import networkManager from '@/utils/networkManager.js';
+import { getUnsyncedDrafts } from '@/api/gc.js';
+
 export default {
   data() {
     return {
-      statusBarHeight: 0  // 状态栏高度
+      statusBarHeight: 0,  // 状态栏高度
+      isOnline: true,      // 网络状态
+      unsyncedCount: 0     // 未同步草稿数量
     }
   },
   onLoad() {
     // 获取系统信息，适配刘海屏
     this.getSystemInfo();
+    
+    // 初始化网络状态
+    this.initNetworkStatus();
+    
+    // 检查未同步草稿
+    this.checkUnsyncedDrafts();
+  },
+  onShow() {
+    // 每次显示页面时检查草稿
+    this.checkUnsyncedDrafts();
+  },
+  onUnload() {
+    // 页面卸载时移除监听器
+    if (this.networkStatusListener) {
+      networkManager.removeListener(this.networkStatusListener);
+    }
   },
   methods: {
     // 获取系统信息（状态栏高度）
@@ -86,6 +120,39 @@ export default {
       this.statusBarHeight = systemInfo.statusBarHeight || 0;
       console.log('状态栏高度:', this.statusBarHeight);
     },
+    
+    // 初始化网络状态
+    initNetworkStatus() {
+      // 获取当前网络状态
+      const status = networkManager.getStatus();
+      this.isOnline = status.isOnline;
+      
+      // 监听网络状态变化
+      this.networkStatusListener = (status) => {
+        this.isOnline = status.isOnline;
+        
+        // 网络恢复时，重新检查草稿
+        if (status.isOnline) {
+          this.checkUnsyncedDrafts();
+        }
+      };
+      
+      networkManager.addListener(this.networkStatusListener);
+    },
+    
+    // 检查未同步草稿
+    checkUnsyncedDrafts() {
+      const drafts = getUnsyncedDrafts();
+      this.unsyncedCount = drafts.length;
+    },
+    
+    // 手动同步草稿
+    async handleSync() {
+      await networkManager.manualSync();
+      // 同步后重新检查
+      this.checkUnsyncedDrafts();
+    },
+    
     handleMenuClick(type) {
       switch(type) {
         case 'roster':
@@ -133,6 +200,43 @@ export default {
 .status-bar {
   width: 100%;
   background: transparent;
+}
+
+/* 网络状态提示 */
+.network-tip {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  margin: 20rpx 30rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.network-tip.offline {
+  background-color: #fff7e6;
+  border: 1rpx solid #ffa940;
+}
+
+.network-tip.unsynced {
+  background-color: #e6f7ff;
+  border: 1rpx solid #1890ff;
+}
+
+.tip-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.tip-text {
+  flex: 1;
+  color: #333;
+}
+
+.tip-action {
+  color: #1890ff;
+  font-weight: bold;
+  margin-left: 20rpx;
 }
 
 /* 顶部背景图区域 */

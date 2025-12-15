@@ -235,13 +235,23 @@ export function cancelAppointment(appointmentId) {
 // ==================== 筛查结果相关 ====================
 
 /**
- * 获取筛查结果
+ * 获取筛查结果列表
  */
-export function getScreeningResult(residentId) {
+export function getScreeningResults(params) {
   return request({
     url: '/api/gc/screening-result/list',
     method: 'GET',
-    data: { residentId }
+    data: params
+  });
+}
+
+/**
+ * 获取筛查结果详情
+ */
+export function getScreeningResultDetail(resultId) {
+  return request({
+    url: `/api/gc/screening-result/${resultId}`,
+    method: 'GET'
   });
 }
 
@@ -259,13 +269,23 @@ export function surveyorLogin(data) {
 }
 
 /**
- * 获取调查员任务进度
+ * 获取调查员任务列表
  */
-export function getSurveyorProgress(surveyorId) {
+export function getSurveyorTasks(params) {
   return request({
-    url: '/api/gc/surveyor/performance',
+    url: '/api/gc/task/surveyor/list',
     method: 'GET',
-    data: { surveyorId }
+    data: params
+  });
+}
+
+/**
+ * 获取调查员统计数据
+ */
+export function getSurveyorStats(surveyorId) {
+  return request({
+    url: `/api/gc/surveyor/${surveyorId}/stats`,
+    method: 'GET'
   });
 }
 
@@ -323,4 +343,214 @@ export function getUserInfo() {
  */
 export function clearUserInfo() {
   uni.removeStorageSync('userInfo');
+}
+
+// ==================== 离线填写功能 ====================
+
+/**
+ * 保存草稿到本地
+ * @param {String} key - 草稿唯一键（如：questionnaire_draft_居民ID_模板ID）
+ * @param {Object} data - 草稿数据
+ */
+export function saveDraft(key, data) {
+  try {
+    const draft = {
+      key: key,
+      data: data,
+      timestamp: Date.now(),
+      synced: false // 是否已同步到服务器
+    };
+    uni.setStorageSync(key, JSON.stringify(draft));
+    
+    // 维护草稿列表
+    const draftList = getDraftList();
+    if (!draftList.includes(key)) {
+      draftList.push(key);
+      uni.setStorageSync('draft_list', JSON.stringify(draftList));
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('保存草稿失败:', error);
+    return false;
+  }
+}
+
+/**
+ * 获取草稿
+ * @param {String} key - 草稿唯一键
+ */
+export function getDraft(key) {
+  try {
+    const draftStr = uni.getStorageSync(key);
+    if (draftStr) {
+      return JSON.parse(draftStr);
+    }
+    return null;
+  } catch (error) {
+    console.error('获取草稿失败:', error);
+    return null;
+  }
+}
+
+/**
+ * 删除草稿
+ * @param {String} key - 草稿唯一键
+ */
+export function deleteDraft(key) {
+  try {
+    uni.removeStorageSync(key);
+    
+    // 从草稿列表中移除
+    const draftList = getDraftList();
+    const index = draftList.indexOf(key);
+    if (index > -1) {
+      draftList.splice(index, 1);
+      uni.setStorageSync('draft_list', JSON.stringify(draftList));
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('删除草稿失败:', error);
+    return false;
+  }
+}
+
+/**
+ * 获取所有草稿列表
+ */
+export function getDraftList() {
+  try {
+    const listStr = uni.getStorageSync('draft_list');
+    return listStr ? JSON.parse(listStr) : [];
+  } catch (error) {
+    console.error('获取草稿列表失败:', error);
+    return [];
+  }
+}
+
+/**
+ * 获取所有未同步的草稿
+ */
+export function getUnsyncedDrafts() {
+  const draftList = getDraftList();
+  const unsyncedDrafts = [];
+  
+  draftList.forEach(key => {
+    const draft = getDraft(key);
+    if (draft && !draft.synced) {
+      unsyncedDrafts.push(draft);
+    }
+  });
+  
+  return unsyncedDrafts;
+}
+
+/**
+ * 标记草稿为已同步
+ * @param {String} key - 草稿唯一键
+ */
+export function markDraftAsSynced(key) {
+  const draft = getDraft(key);
+  if (draft) {
+    draft.synced = true;
+    draft.syncedAt = Date.now();
+    uni.setStorageSync(key, JSON.stringify(draft));
+  }
+}
+
+/**
+ * 检查网络状态
+ */
+export function checkNetworkStatus() {
+  return new Promise((resolve) => {
+    uni.getNetworkType({
+      success: (res) => {
+        const isOnline = res.networkType !== 'none';
+        resolve({
+          isOnline: isOnline,
+          networkType: res.networkType
+        });
+      },
+      fail: () => {
+        resolve({
+          isOnline: false,
+          networkType: 'unknown'
+        });
+      }
+    });
+  });
+}
+
+/**
+ * 监听网络状态变化
+ * @param {Function} callback - 回调函数，参数为 { isOnline, networkType }
+ */
+export function onNetworkStatusChange(callback) {
+  uni.onNetworkStatusChange((res) => {
+    const isOnline = res.isConnected;
+    callback({
+      isOnline: isOnline,
+      networkType: res.networkType
+    });
+  });
+}
+
+/**
+ * 同步所有未同步的草稿到服务器
+ */
+export async function syncAllDrafts() {
+  const networkStatus = await checkNetworkStatus();
+  
+  if (!networkStatus.isOnline) {
+    console.log('网络未连接，无法同步草稿');
+    return {
+      success: false,
+      message: '网络未连接'
+    };
+  }
+  
+  const unsyncedDrafts = getUnsyncedDrafts();
+  
+  if (unsyncedDrafts.length === 0) {
+    console.log('没有需要同步的草稿');
+    return {
+      success: true,
+      message: '没有需要同步的草稿',
+      count: 0
+    };
+  }
+  
+  console.log(`开始同步 ${unsyncedDrafts.length} 个草稿...`);
+  
+  let successCount = 0;
+  let failCount = 0;
+  
+  for (const draft of unsyncedDrafts) {
+    try {
+      // 根据草稿key判断类型并调用相应的API
+      if (draft.key.startsWith('questionnaire_draft_')) {
+        // 同步问卷草稿
+        await submitQuestionnaire(draft.data);
+        markDraftAsSynced(draft.key);
+        successCount++;
+      } else if (draft.key.startsWith('resident_draft_')) {
+        // 同步居民信息草稿
+        await addResident(draft.data);
+        markDraftAsSynced(draft.key);
+        successCount++;
+      }
+      // 可以根据需要添加其他类型的草稿同步逻辑
+    } catch (error) {
+      console.error(`同步草稿 ${draft.key} 失败:`, error);
+      failCount++;
+    }
+  }
+  
+  return {
+    success: successCount > 0,
+    message: `成功同步 ${successCount} 个，失败 ${failCount} 个`,
+    successCount: successCount,
+    failCount: failCount
+  };
 }

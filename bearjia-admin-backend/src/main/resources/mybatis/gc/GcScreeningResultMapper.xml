@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcScreeningResultMapper">
+    
+    <resultMap type="GcScreeningResult" id="GcScreeningResultResult">
+        <result property="resultId"    column="result_id"    />
+        <result property="residentId"    column="resident_id"    />
+        <result property="siteId"    column="site_id"    />
+        <result property="bloodResult"    column="blood_result"    />
+        <result property="bloodResultDetail"    column="blood_result_detail"    />
+        <result property="bloodResultDate"    column="blood_result_date"    />
+        <result property="gastroscopyResult"    column="gastroscopy_result"    />
+        <result property="gastroscopyResultDetail"    column="gastroscopy_result_detail"    />
+        <result property="gastroscopyDate"    column="gastroscopy_date"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="residentName"    column="resident_name"    />
+        <result property="gender"    column="gender"    />
+        <result property="age"    column="age"    />
+        <result property="contactPhone"    column="contact_phone"    />
+        <result property="siteName"    column="site_name"    />
+        <result property="district"    column="district"    />
+        <result property="street"    column="street"    />
+    </resultMap>
+    
+    <resultMap type="ScreeningStatisticsVO" id="ScreeningStatisticsResult">
+        <result property="siteId"    column="site_id"    />
+        <result property="siteName"    column="site_name"    />
+        <result property="focusGroupCount"    column="focus_group_count"    />
+        <result property="nonFocusGroupCount"    column="non_focus_group_count"    />
+        <result property="bloodParticipantCount"    column="blood_participant_count"    />
+        <result property="lowRiskCount"    column="low_risk_count"    />
+        <result property="highRiskCount"    column="high_risk_count"    />
+        <result property="gastroscopyCount"    column="gastroscopy_count"    />
+    </resultMap>
+
+    <sql id="selectResultVo">
+        select 
+            sr.result_id, sr.resident_id, sr.site_id,
+            sr.blood_result, sr.blood_result_detail, sr.blood_result_date,
+            sr.gastroscopy_result, sr.gastroscopy_result_detail, sr.gastroscopy_date,
+            sr.create_by, sr.create_time, sr.update_by, sr.update_time,
+            r.resident_name, r.gender, r.age, r.contact_phone, r.district, r.street,
+            s.site_name
+        from gc_screening_result sr
+        left join gc_resident r on sr.resident_id = r.resident_id
+        left join gc_sampling_site s on sr.site_id = s.site_id
+    </sql>
+
+    <select id="selectResultList" parameterType="GcScreeningResult" resultMap="GcScreeningResultResult">
+        <include refid="selectResultVo"/>
+        <where>  
+            <if test="residentId != null">
+                and sr.resident_id = #{residentId}
+            </if>
+            <if test="siteId != null">
+                and sr.site_id = #{siteId}
+            </if>
+            <if test="bloodResult != null and bloodResult != ''">
+                and sr.blood_result = #{bloodResult}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                and date_format(sr.blood_result_date,'%Y-%m-%d') &gt;= date_format(#{params.beginTime},'%Y-%m-%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                and date_format(sr.blood_result_date,'%Y-%m-%d') &lt;= date_format(#{params.endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        order by sr.blood_result_date desc
+    </select>
+    
+    <select id="selectResultById" parameterType="Long" resultMap="GcScreeningResultResult">
+        <include refid="selectResultVo"/>
+        where sr.result_id = #{resultId}
+    </select>
+    
+    <select id="selectResultByResidentId" parameterType="Long" resultMap="GcScreeningResultResult">
+        <include refid="selectResultVo"/>
+        where sr.resident_id = #{residentId}
+    </select>
+    
+    <select id="selectHighRiskList" parameterType="GcScreeningResult" resultMap="GcScreeningResultResult">
+        <include refid="selectResultVo"/>
+        where sr.blood_result = 'high_risk'
+        <if test="siteId != null">
+            and sr.site_id = #{siteId}
+        </if>
+        order by sr.blood_result_date desc
+    </select>
+    
+    <select id="selectStatisticsBySite" resultMap="ScreeningStatisticsResult">
+        select 
+            s.site_id,
+            s.site_name,
+            count(case when res.is_focus_group = 1 then 1 end) as focus_group_count,
+            count(case when res.is_focus_group = 0 then 1 end) as non_focus_group_count,
+            count(case when res.sampling_status = '1' then 1 end) as blood_participant_count,
+            count(case when sr.blood_result = 'low_risk' then 1 end) as low_risk_count,
+            count(case when sr.blood_result = 'high_risk' then 1 end) as high_risk_count,
+            count(case when sr.gastroscopy_result is not null then 1 end) as gastroscopy_count
+        from gc_sampling_site s
+        left join gc_resident res on res.appointment_site_id = s.site_id
+        left join gc_screening_result sr on sr.resident_id = res.resident_id
+        <where>
+            <if test="regionId != null">
+                and s.region_id = #{regionId}
+            </if>
+        </where>
+        group by s.site_id, s.site_name
+        order by s.site_id
+    </select>
+        
+    <insert id="insertResult" parameterType="GcScreeningResult" useGeneratedKeys="true" keyProperty="resultId">
+        insert into gc_screening_result
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">resident_id,</if>
+            <if test="siteId != null">site_id,</if>
+            <if test="bloodResult != null and bloodResult != ''">blood_result,</if>
+            <if test="bloodResultDetail != null">blood_result_detail,</if>
+            <if test="bloodResultDate != null">blood_result_date,</if>
+            <if test="gastroscopyResult != null">gastroscopy_result,</if>
+            <if test="gastroscopyResultDetail != null">gastroscopy_result_detail,</if>
+            <if test="gastroscopyDate != null">gastroscopy_date,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">#{residentId},</if>
+            <if test="siteId != null">#{siteId},</if>
+            <if test="bloodResult != null and bloodResult != ''">#{bloodResult},</if>
+            <if test="bloodResultDetail != null">#{bloodResultDetail},</if>
+            <if test="bloodResultDate != null">#{bloodResultDate},</if>
+            <if test="gastroscopyResult != null">#{gastroscopyResult},</if>
+            <if test="gastroscopyResultDetail != null">#{gastroscopyResultDetail},</if>
+            <if test="gastroscopyDate != null">#{gastroscopyDate},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+         </trim>
+    </insert>
+
+    <update id="updateResult" parameterType="GcScreeningResult">
+        update gc_screening_result
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="bloodResult != null and bloodResult != ''">blood_result = #{bloodResult},</if>
+            <if test="bloodResultDetail != null">blood_result_detail = #{bloodResultDetail},</if>
+            <if test="bloodResultDate != null">blood_result_date = #{bloodResultDate},</if>
+            <if test="gastroscopyResult != null">gastroscopy_result = #{gastroscopyResult},</if>
+            <if test="gastroscopyResultDetail != null">gastroscopy_result_detail = #{gastroscopyResultDetail},</if>
+            <if test="gastroscopyDate != null">gastroscopy_date = #{gastroscopyDate},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where result_id = #{resultId}
+    </update>
+
+    <delete id="deleteResultById" parameterType="Long">
+        delete from gc_screening_result where result_id = #{resultId}
+    </delete>
+
+    <delete id="deleteResultByIds" parameterType="Long">
+        delete from gc_screening_result where result_id in 
+        <foreach item="resultId" collection="array" open="(" separator="," close=")">
+            #{resultId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcTaskMapper">
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.entity.GcTask" id="GcTaskResult">
+        <id     property="taskId"           column="task_id"          />
+        <result property="taskName"         column="task_name"        />
+        <result property="taskCode"         column="task_code"        />
+        <result property="taskType"         column="task_type"        />
+        <result property="taskStatus"       column="task_status"      />
+        <result property="description"      column="description"      />
+        <result property="targetRegionId"   column="target_region_id" />
+        <result property="targetCount"      column="target_count"     />
+        <result property="completedCount"   column="completed_count"  />
+        <result property="startDate"        column="start_date"       />
+        <result property="endDate"          column="end_date"         />
+        <result property="createBy"         column="create_by"        />
+        <result property="createTime"       column="create_time"      />
+        <result property="updateBy"         column="update_by"        />
+        <result property="updateTime"       column="update_time"      />
+        <result property="remark"           column="remark"           />
+    </resultMap>
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.vo.TaskVO" id="TaskVOResult">
+        <id     property="taskId"           column="task_id"          />
+        <result property="taskName"         column="task_name"        />
+        <result property="taskCode"         column="task_code"        />
+        <result property="taskType"         column="task_type"        />
+        <result property="taskStatus"       column="task_status"      />
+        <result property="targetRegionName" column="target_region_name" />
+        <result property="targetCount"      column="target_count"     />
+        <result property="completedCount"   column="completed_count"  />
+        <result property="completionRate"   column="completion_rate"  />
+        <result property="startDate"        column="start_date"       />
+        <result property="endDate"          column="end_date"         />
+        <result property="createTime"       column="create_time"      />
+    </resultMap>
+
+    <sql id="selectTaskVo">
+        select 
+            t.task_id, t.task_name, t.task_code, t.task_type, t.task_status,
+            t.target_region_id, t.target_count, t.completed_count,
+            t.start_date, t.end_date, t.create_time, t.remark,
+            r.region_name as target_region_name,
+            CASE 
+                WHEN t.target_count = 0 THEN 0 
+                ELSE ROUND(t.completed_count * 100.0 / t.target_count, 2) 
+            END as completion_rate
+        from gc_task t
+        left join gc_region r on t.target_region_id = r.region_id
+    </sql>
+
+    <select id="selectTaskList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcTask" resultMap="TaskVOResult">
+        <include refid="selectTaskVo"/>
+        <where>
+            <if test="taskName != null and taskName != ''">
+                AND t.task_name like concat('%', #{taskName}, '%')
+            </if>
+            <if test="taskCode != null and taskCode != ''">
+                AND t.task_code = #{taskCode}
+            </if>
+            <if test="taskType != null and taskType != ''">
+                AND t.task_type = #{taskType}
+            </if>
+            <if test="taskStatus != null and taskStatus != ''">
+                AND t.task_status = #{taskStatus}
+            </if>
+            <if test="targetRegionId != null">
+                AND t.target_region_id = #{targetRegionId}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND date_format(t.start_date,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND date_format(t.end_date,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
+        </where>
+        order by t.create_time desc
+    </select>
+
+    <select id="selectTaskById" parameterType="Long" resultMap="GcTaskResult">
+        select task_id, task_name, task_code, task_type, task_status, description,
+               target_region_id, target_count, completed_count, start_date, end_date,
+               create_by, create_time, update_by, update_time, remark
+        from gc_task
+        where task_id = #{taskId}
+    </select>
+
+    <select id="selectTaskByCode" parameterType="String" resultMap="GcTaskResult">
+        select task_id, task_name, task_code
+        from gc_task
+        where task_code = #{taskCode}
+        limit 1
+    </select>
+
+    <insert id="insertTask" parameterType="com.javaxiaobear.module.gc.domain.entity.GcTask" useGeneratedKeys="true" keyProperty="taskId">
+        insert into gc_task(
+            <if test="taskName != null and taskName != ''">task_name,</if>
+            <if test="taskCode != null and taskCode != ''">task_code,</if>
+            <if test="taskType != null and taskType != ''">task_type,</if>
+            <if test="taskStatus != null and taskStatus != ''">task_status,</if>
+            <if test="description != null and description != ''">description,</if>
+            <if test="targetRegionId != null">target_region_id,</if>
+            <if test="targetCount != null">target_count,</if>
+            <if test="completedCount != null">completed_count,</if>
+            <if test="startDate != null">start_date,</if>
+            <if test="endDate != null">end_date,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        )values(
+            <if test="taskName != null and taskName != ''">#{taskName},</if>
+            <if test="taskCode != null and taskCode != ''">#{taskCode},</if>
+            <if test="taskType != null and taskType != ''">#{taskType},</if>
+            <if test="taskStatus != null and taskStatus != ''">#{taskStatus},</if>
+            <if test="description != null and description != ''">#{description},</if>
+            <if test="targetRegionId != null">#{targetRegionId},</if>
+            <if test="targetCount != null">#{targetCount},</if>
+            <if test="completedCount != null">#{completedCount},</if>
+            <if test="startDate != null">#{startDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        )
+    </insert>
+
+    <update id="updateTask" parameterType="com.javaxiaobear.module.gc.domain.entity.GcTask">
+        update gc_task
+        <set>
+            <if test="taskName != null and taskName != ''">task_name = #{taskName},</if>
+            <if test="taskStatus != null and taskStatus != ''">task_status = #{taskStatus},</if>
+            <if test="description != null and description != ''">description = #{description},</if>
+            <if test="targetCount != null">target_count = #{targetCount},</if>
+            <if test="completedCount != null">completed_count = #{completedCount},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </set>
+        where task_id = #{taskId}
+    </update>
+
+    <delete id="deleteTaskById" parameterType="Long">
+        delete from gc_task where task_id = #{taskId}
+    </delete>
+
+    <delete id="deleteTaskByIds" parameterType="Long">
+        delete from gc_task where task_id in
+        <foreach item="taskId" collection="array" open="(" separator="," close=")">
+            #{taskId}
+        </foreach>
+    </delete>
+
+    <!-- 统计指定区域的问卷完成数量 -->
+    <select id="countQuestionnaireByRegion" resultType="int">
+        select count(1)
+        from gc_questionnaire_record qr
+        join gc_resident r on qr.resident_id = r.resident_id
+        <where>
+            <if test="regionLevel == 3">
+                r.district_id = #{regionId}
+            </if>
+            <if test="regionLevel == 4">
+                r.street_id = #{regionId}
+            </if>
+            <if test="regionLevel == 5">
+                r.community_id = #{regionId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND qr.fill_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND qr.fill_time &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <!-- 统计指定区域的采血完成数量 -->
+    <select id="countBloodByRegion" resultType="int">
+        select count(1)
+        from gc_blood_appointment ba
+        join gc_resident r on ba.resident_id = r.resident_id
+        <where>
+            ba.sampling_status = '1'
+            <if test="regionLevel == 3">
+                AND r.district_id = #{regionId}
+            </if>
+            <if test="regionLevel == 4">
+                AND r.street_id = #{regionId}
+            </if>
+            <if test="regionLevel == 5">
+                AND r.community_id = #{regionId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND ba.appointment_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND ba.appointment_date &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -387,6 +387,32 @@ export function delScreeningResult(resultId) {
 /**
  * 审核筛查结果
  * @param {Number} resultId - 结果ID
+ * @param {Object} data - 审核数据 { auditStatus, auditRemark }
+ */
+export function auditScreeningResult(resultId, data) {
+  return request({
+    url: '/api/gc/screening/result/audit/' + resultId,
+    method: 'put',
+    data: data,
+  });
+}
+
+/**
+ * 导出筛查结果
+ * @param {Object} query - 查询参数
+ */
+export function exportScreeningResult(query) {
+  return request({
+    url: '/api/gc/screening/result/export',
+    method: 'get',
+    params: query,
+    responseType: 'blob',
+  });
+}
+
+/**
+ * 审核筛查结果
+ * @param {Number} resultId - 结果ID
  */
 export function reviewScreeningResult(resultId) {
   return request({
@@ -646,6 +672,54 @@ export function cancelBloodAppointment(appointmentId, reason) {
 }
 
 // ==================== 统计分析 ====================
+
+/**
+ * 获取居民统计数据
+ * @param {Object} query - 查询参数
+ */
+export function getResidentStatistics(query) {
+  return request({
+    url: '/api/gc/statistics/resident',
+    method: 'get',
+    params: query,
+  });
+}
+
+/**
+ * 获取随访统计数据
+ * @param {Object} query - 查询参数
+ */
+export function getFollowUpStatistics(query) {
+  return request({
+    url: '/api/gc/statistics/follow-up',
+    method: 'get',
+    params: query,
+  });
+}
+
+/**
+ * 获取筛查趋势数据
+ * @param {Object} query - 查询参数
+ */
+export function getScreeningTrend(query) {
+  return request({
+    url: '/api/gc/statistics/screening-trend',
+    method: 'get',
+    params: query,
+  });
+}
+
+/**
+ * 获取年龄分布数据
+ * @param {Object} query - 查询参数
+ */
+export function getAgeDistribution(query) {
+  return request({
+    url: '/api/gc/statistics/age-distribution',
+    method: 'get',
+    params: query,
+  });
+}
 
 /**
  * 获取风险等级分布统计

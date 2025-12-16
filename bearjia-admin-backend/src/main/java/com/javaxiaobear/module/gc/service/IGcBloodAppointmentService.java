@@ -5,6 +5,7 @@ import com.javaxiaobear.module.gc.domain.vo.BloodAppointmentVO;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 采血预约Service接口
@@ -111,4 +112,22 @@ public interface IGcBloodAppointmentService {
      * @return 预约列表
      */
     List<BloodAppointmentVO> exportAppointmentList(GcBloodAppointment appointment);
+
+    /**
+     * 检查采血点容量
+     * 
+     * @param siteId 采血点ID
+     * @param appointmentDate 预约日期
+     * @return 容量信息(isFull:是否满额, currentCount:当前数量, maxCapacity:最大容量)
+     */
+    Map<String, Object> checkCapacity(Long siteId, Date appointmentDate);
+
+    /**
+     * 获取可用时间段
+     * 
+     * @param siteId 采血点ID
+     * @param appointmentDate 预约日期
+     * @return 可用时间段列表
+     */
+    List<Map<String, Object>> getAvailableTimeSlots(Long siteId, Date appointmentDate);
 }

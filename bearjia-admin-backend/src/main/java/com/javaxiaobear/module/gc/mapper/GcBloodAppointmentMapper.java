@@ -165,4 +165,14 @@ public interface GcBloodAppointmentMapper extends BaseMapper<GcBloodAppointment>
                               @Param("regionLevel") Integer regionLevel,
                               @Param("startDate") Date startDate,
                               @Param("endDate") Date endDate);
+
+    /**
+     * 统计指定采血点在指定日期的预约数量
+     * 
+     * @param siteId 采血点ID
+     * @param appointmentDate 预约日期
+     * @return 预约数量
+     */
+    int countAppointmentByDate(@Param("siteId") Long siteId,
+                               @Param("appointmentDate") Date appointmentDate);
 }

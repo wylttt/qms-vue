@@ -46,6 +46,9 @@ public class GcSamplingSite extends BaseEntity {
     /** 状态(0正常/1停用) */
     private String status;
 
+    /** 每日最大预约容量 */
+    private Integer dailyCapacity;
+
     /** 区域名称(关联查询字段) */
     private String regionName;
 
@@ -137,6 +140,14 @@ public class GcSamplingSite extends BaseEntity {
         return status;
     }
 
+    public void setDailyCapacity(Integer dailyCapacity) {
+        this.dailyCapacity = dailyCapacity;
+    }
+
+    public Integer getDailyCapacity() {
+        return dailyCapacity;
+    }
+
     public void setRegionName(String regionName) {
         this.regionName = regionName;
     }
@@ -159,6 +170,7 @@ public class GcSamplingSite extends BaseEntity {
             .append("siteManagerName", getSiteManagerName())
             .append("siteManagerPhone", getSiteManagerPhone())
             .append("status", getStatus())
+            .append("dailyCapacity", getDailyCapacity())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

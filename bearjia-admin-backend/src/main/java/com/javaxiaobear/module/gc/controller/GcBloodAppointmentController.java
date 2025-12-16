@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 采血预约Controller
@@ -143,5 +144,25 @@ public class GcBloodAppointmentController extends BaseController {
         // TODO: 实现Excel导出逻辑
         // ExcelUtil<BloodAppointmentVO> util = new ExcelUtil<>(BloodAppointmentVO.class);
         // util.exportExcel(response, list, "采血预约数据");
+    }
+
+    /**
+     * 检查采血点容量
+     */
+    @GetMapping("/check-capacity")
+    public AjaxResult checkCapacity(@RequestParam Long siteId,
+                                    @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date appointmentDate) {
+        Map<String, Object> capacityInfo = appointmentService.checkCapacity(siteId, appointmentDate);
+        return success(capacityInfo);
+    }
+
+    /**
+     * 获取可用时间段
+     */
+    @GetMapping("/available-slots")
+    public AjaxResult getAvailableSlots(@RequestParam Long siteId,
+                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date appointmentDate) {
+        List<Map<String, Object>> slots = appointmentService.getAvailableTimeSlots(siteId, appointmentDate);
+        return success(slots);
     }
 }

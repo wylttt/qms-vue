@@ -2,15 +2,20 @@ package com.javaxiaobear.module.gc.service.impl;
 
 import com.javaxiaobear.common.exception.ServiceException;
 import com.javaxiaobear.module.gc.domain.entity.GcBloodAppointment;
+import com.javaxiaobear.module.gc.domain.entity.GcSamplingSite;
 import com.javaxiaobear.module.gc.domain.vo.BloodAppointmentVO;
 import com.javaxiaobear.module.gc.mapper.GcBloodAppointmentMapper;
+import com.javaxiaobear.module.gc.mapper.GcSamplingSiteMapper;
 import com.javaxiaobear.module.gc.service.IGcBloodAppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * 采血预约Service实现类
@@ -23,6 +28,9 @@ public class GcBloodAppointmentServiceImpl implements IGcBloodAppointmentService
 
     @Autowired
     private GcBloodAppointmentMapper appointmentMapper;
+
+    @Autowired
+    private GcSamplingSiteMapper samplingSiteMapper;
 
     /**
      * 查询采血预约列表
@@ -387,5 +395,75 @@ public class GcBloodAppointmentServiceImpl implements IGcBloodAppointmentService
         if (!"1".equals(appointment.getAppointmentPeriod()) && !"2".equals(appointment.getAppointmentPeriod())) {
             throw new ServiceException("预约时间段必须为1(上午)或2(下午)");
         }
+    }
+
+    /**
+     * 检查采血点容量
+     * 
+     * @param siteId 采血点ID
+     * @param appointmentDate 预约日期
+     * @return 容量信息
+     */
+    @Override
+    public Map<String, Object> checkCapacity(Long siteId, Date appointmentDate) {
+        Map<String, Object> result = new HashMap<>();
+        
+        // 1. 查询采血点信息
+        GcSamplingSite site = samplingSiteMapper.selectById(siteId);
+        if (site == null) {
+            throw new ServiceException("采血点不存在");
+        }
+        
+        // 2. 获取每日最大容量（默认100）
+        Integer maxCapacity = site.getDailyCapacity() != null ? site.getDailyCapacity() : 100;
+        
+        // 3. 统计当前日期的预约数量（仅统计待确认和已确认状态）
+        int currentCount = appointmentMapper.countAppointmentByDate(siteId, appointmentDate);
+        
+        // 4. 判断是否满额
+        boolean isFull = currentCount >= maxCapacity;
+        
+        result.put("isFull", isFull);
+        result.put("currentCount", currentCount);
+        result.put("maxCapacity", maxCapacity);
+        result.put("remainingCapacity", Math.max(0, maxCapacity - currentCount));
+        
+        return result;
+    }
+
+    /**
+     * 获取可用时间段
+     * 
+     * @param siteId 采血点ID
+     * @param appointmentDate 预约日期
+     * @return 可用时间段列表
+     */
+    @Override
+    public List<Map<String, Object>> getAvailableTimeSlots(Long siteId, Date appointmentDate) {
+        List<Map<String, Object>> slots = new ArrayList<>();
+        
+        // 检查整体容量
+        Map<String, Object> capacityInfo = checkCapacity(siteId, appointmentDate);
+        boolean isFull = (boolean) capacityInfo.get("isFull");
+        
+        // 如果已满额,返回空列表
+        if (isFull) {
+            return slots;
+        }
+        
+        // 返回可用时间段（上午/下午）
+        Map<String, Object> morningSlot = new HashMap<>();
+        morningSlot.put("period", "1");
+        morningSlot.put("label", "上午 08:00-12:00");
+        morningSlot.put("available", true);
+        slots.add(morningSlot);
+        
+        Map<String, Object> afternoonSlot = new HashMap<>();
+        afternoonSlot.put("period", "2");
+        afternoonSlot.put("label", "下午 14:00-18:00");
+        afternoonSlot.put("available", true);
+        slots.add(afternoonSlot);
+        
+        return slots;
     }
 }

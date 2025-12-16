@@ -137,6 +137,11 @@ import {
   getCommunities
 } from '@/api/gc.js';
 import { smartOCRIdCard, validateIdCard } from '@/utils/ocrHelper.js';
+import { 
+  getCachedRegionData, 
+  preloadCommonRegions, 
+  clearExpiredCache 
+} from '@/utils/regionCache.js';
 
 export default {
   data() {
@@ -173,6 +178,12 @@ export default {
   },
 
   onLoad() {
+    // 清理过期缓存
+    clearExpiredCache();
+    
+    // 预加载常用区划（江西省及下级）
+    preloadCommonRegions();
+    
     this.loadProvinces();
   },
 
@@ -262,10 +273,13 @@ export default {
       this.formData.birthDate = e.detail.value;
     },
 
-    // 加载省份列表
+    // 加载省份列表（使用缓存）
     async loadProvinces() {
       try {
-        const res = await getProvinces();
+        const res = await getCachedRegionData(
+          () => getProvinces(), 
+          'regions_provinces'
+        );
         this.provinces = res.data || [];
       } catch (error) {
         console.error('加载省份失败', error);
@@ -289,9 +303,12 @@ export default {
       this.selectedStreet = '';
       this.selectedCommunity = '';
 
-      // 加载城市
+      // 加载城市（使用缓存）
       try {
-        const res = await getCities(province.regionId);
+        const res = await getCachedRegionData(
+          () => getCities(province.regionId),
+          `regions_cities_${province.regionId}`
+        );
         this.cities = res.data || [];
       } catch (error) {
         console.error('加载城市失败', error);
@@ -313,9 +330,12 @@ export default {
       this.selectedStreet = '';
       this.selectedCommunity = '';
 
-      // 加载区县
+      // 加载区县（使用缓存）
       try {
-        const res = await getDistricts(city.regionId);
+        const res = await getCachedRegionData(
+          () => getDistricts(city.regionId),
+          `regions_districts_${city.regionId}`
+        );
         this.districts = res.data || [];
       } catch (error) {
         console.error('加载区县失败', error);
@@ -335,9 +355,12 @@ export default {
       this.selectedStreet = '';
       this.selectedCommunity = '';
 
-      // 加载街道
+      // 加载街道（使用缓存）
       try {
-        const res = await getStreets(district.regionId);
+        const res = await getCachedRegionData(
+          () => getStreets(district.regionId),
+          `regions_streets_${district.regionId}`
+        );
         this.streets = res.data || [];
       } catch (error) {
         console.error('加载街道失败', error);
@@ -355,9 +378,12 @@ export default {
       this.communities = [];
       this.selectedCommunity = '';
 
-      // 加载社区
+      // 加载社区（使用缓存）
       try {
-        const res = await getCommunities(street.regionId);
+        const res = await getCachedRegionData(
+          () => getCommunities(street.regionId),
+          `regions_communities_${street.regionId}`
+        );
         this.communities = res.data || [];
       } catch (error) {
         console.error('加载社区失败', error);

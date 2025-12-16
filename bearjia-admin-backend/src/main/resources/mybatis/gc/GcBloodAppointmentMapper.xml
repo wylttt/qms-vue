@@ -339,4 +339,12 @@
         </if>
     </select>
 
+    <!-- 统计指定采血点在指定日期的预约数量 -->
+    <select id="countAppointmentByDate" resultType="int">
+        select count(1) from gc_blood_appointment
+        where appointment_site_id = #{siteId}
+        and appointment_date = #{appointmentDate}
+        and appointment_status in ('0', '1')
+    </select>
+
 </mapper>

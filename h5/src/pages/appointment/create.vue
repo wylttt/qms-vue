@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import { getSamplingSiteOptions, createAppointment } from '@/api/gc.js';
+import { getSamplingSiteOptions, createAppointment, checkAppointmentCapacity, getAvailableTimeSlots } from '@/api/gc.js';
 
 export default {
   data() {
@@ -92,7 +92,9 @@ export default {
       appointmentDate: '',
       appointmentTime: '',
       minDate: '',
-      maxDate: ''
+      maxDate: '',
+      availableSlots: [], // 可用时间段
+      capacityInfo: null  // 容量信息
     };
   },
 
@@ -142,19 +144,80 @@ export default {
     },
 
     // 采血点改变
-    onSiteChange(e) {
+    async onSiteChange(e) {
       const index = e.detail.value;
       this.selectedSite = this.samplingSites[index];
+      
+      // 如果已选择日期,检查容量
+      if (this.appointmentDate) {
+        await this.checkCapacity();
+      }
     },
 
     // 日期改变
-    onDateChange(e) {
+    async onDateChange(e) {
       this.appointmentDate = e.detail.value;
+      this.appointmentTime = ''; // 重置时间
+      
+      // 检查容量并加载可用时间段
+      if (this.selectedSite) {
+        await this.checkCapacity();
+        await this.loadAvailableSlots();
+      }
     },
 
     // 时间改变
     onTimeChange(e) {
       this.appointmentTime = e.detail.value;
+    },
+    
+    // 检查采血点容量
+    async checkCapacity() {
+      if (!this.selectedSite || !this.appointmentDate) {
+        return;
+      }
+      
+      try {
+        const res = await checkAppointmentCapacity(
+          this.selectedSite.siteId,
+          this.appointmentDate
+        );
+        
+        if (res.code === 200) {
+          this.capacityInfo = res.data;
+          
+          // 如果已满额,提示用户
+          if (res.data.isFull) {
+            uni.showModal({
+              title: '提示',
+              content: `该采血点在${this.appointmentDate}已满额(${res.data.currentCount}/${res.data.maxCapacity}),请选择其他日期或采血点`,
+              showCancel: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error('检查容量失败', error);
+      }
+    },
+    
+    // 加载可用时间段
+    async loadAvailableSlots() {
+      if (!this.selectedSite || !this.appointmentDate) {
+        return;
+      }
+      
+      try {
+        const res = await getAvailableTimeSlots(
+          this.selectedSite.siteId,
+          this.appointmentDate
+        );
+        
+        if (res.code === 200) {
+          this.availableSlots = res.data || [];
+        }
+      } catch (error) {
+        console.error('加载可用时间段失败', error);
+      }
     },
 
     // 表单验证
@@ -191,6 +254,15 @@ export default {
       if (!this.validate()) {
         return;
       }
+      
+      // 最终检查容量
+      if (this.capacityInfo && this.capacityInfo.isFull) {
+        uni.showToast({
+          title: '该采血点已满额',
+          icon: 'none'
+        });
+        return;
+      }
 
       try {
         uni.showLoading({ title: '预约中...' });
@@ -207,7 +279,7 @@ export default {
         if (res.code === 200) {
           uni.showModal({
             title: '预约成功',
-            content: '您的采血预约已成功，请按时前往采血点',
+            content: '您的采血预约已成功,请按时前往采血点',
             showCancel: false,
             success: () => {
               uni.switchTab({

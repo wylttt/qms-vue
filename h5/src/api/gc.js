@@ -198,6 +198,33 @@ export function getSamplingSiteInfo(siteId) {
   });
 }
 
+/**
+ * 检查采血点预约容量
+ * @param {String} siteId - 采血点ID
+ * @param {String} appointmentDate - 预约日期（YYYY-MM-DD）
+ * @param {String} timeSlot - 时间段（可选）
+ */
+export function checkAppointmentCapacity(siteId, appointmentDate, timeSlot) {
+  return request({
+    url: '/api/gc/blood/appointment/check-capacity',
+    method: 'GET',
+    data: { siteId, appointmentDate, timeSlot }
+  });
+}
+
+/**
+ * 获取采血点可用时间段
+ * @param {String} siteId - 采血点ID
+ * @param {String} appointmentDate - 预约日期（YYYY-MM-DD）
+ */
+export function getAvailableTimeSlots(siteId, appointmentDate) {
+  return request({
+    url: '/api/gc/blood/appointment/available-slots',
+    method: 'GET',
+    data: { siteId, appointmentDate }
+  });
+}
+
 // ==================== 采血预约相关 ====================
 
 /**

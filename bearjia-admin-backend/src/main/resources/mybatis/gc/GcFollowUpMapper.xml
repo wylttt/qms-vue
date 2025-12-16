@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcFollowUpMapper">
+
+    <resultMap id="GcFollowUpResult" type="com.javaxiaobear.module.gc.domain.GcFollowUp">
+        <id property="followUpId" column="follow_up_id"/>
+        <result property="residentId" column="resident_id"/>
+        <result property="resultId" column="result_id"/>
+        <result property="followUpType" column="follow_up_type"/>
+        <result property="followUpStatus" column="follow_up_status"/>
+        <result property="followUpLevel" column="follow_up_level"/>
+        <result property="assignedUserId" column="assigned_user_id"/>
+        <result property="assignedUserName" column="assigned_user_name"/>
+        <result property="assignDate" column="assign_date"/>
+        <result property="completeDate" column="complete_date"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="GcFollowUpDetailResult" type="com.javaxiaobear.module.gc.domain.GcFollowUp" extends="GcFollowUpResult">
+        <association property="resident" javaType="com.javaxiaobear.module.gc.domain.GcResident">
+            <id property="residentId" column="resident_id"/>
+            <result property="name" column="resident_name"/>
+            <result property="idCard" column="id_card"/>
+            <result property="phone" column="phone"/>
+            <result property="gender" column="gender"/>
+            <result property="age" column="age"/>
+            <result property="districtId" column="district_id"/>
+            <result property="districtName" column="district_name"/>
+        </association>
+        <association property="screeningResult" javaType="com.javaxiaobear.module.gc.domain.GcScreeningResult">
+            <id property="resultId" column="result_id"/>
+            <result property="bloodResult" column="blood_result"/>
+            <result property="bloodResultDetail" column="blood_result_detail"/>
+            <result property="bloodResultDate" column="blood_result_date"/>
+            <result property="gastroscopyResult" column="gastroscopy_result"/>
+        </association>
+    </resultMap>
+
+    <sql id="selectGcFollowUpVo">
+        select follow_up_id, resident_id, result_id, follow_up_type, follow_up_status, follow_up_level,
+               assigned_user_id, assigned_user_name, assign_date, complete_date, remark,
+               create_by, create_time, update_by, update_time
+        from gc_follow_up
+    </sql>
+
+    <select id="selectFollowUpList" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUp" resultMap="GcFollowUpResult">
+        <include refid="selectGcFollowUpVo"/>
+        <where>
+            <if test="residentId != null">
+                and resident_id = #{residentId}
+            </if>
+            <if test="resultId != null">
+                and result_id = #{resultId}
+            </if>
+            <if test="followUpType != null and followUpType != ''">
+                and follow_up_type = #{followUpType}
+            </if>
+            <if test="followUpStatus != null and followUpStatus != ''">
+                and follow_up_status = #{followUpStatus}
+            </if>
+            <if test="followUpLevel != null and followUpLevel != ''">
+                and follow_up_level = #{followUpLevel}
+            </if>
+            <if test="assignedUserId != null">
+                and assigned_user_id = #{assignedUserId}
+            </if>
+            <if test="params.beginAssignDate != null and params.beginAssignDate != ''">
+                and date_format(assign_date,'%y%m%d') &gt;= date_format(#{params.beginAssignDate},'%y%m%d')
+            </if>
+            <if test="params.endAssignDate != null and params.endAssignDate != ''">
+                and date_format(assign_date,'%y%m%d') &lt;= date_format(#{params.endAssignDate},'%y%m%d')
+            </if>
+        </where>
+        order by follow_up_id desc
+    </select>
+
+    <select id="selectFollowUpById" parameterType="Long" resultMap="GcFollowUpDetailResult">
+        select f.follow_up_id, f.resident_id, f.result_id, f.follow_up_type, f.follow_up_status, f.follow_up_level,
+               f.assigned_user_id, f.assigned_user_name, f.assign_date, f.complete_date, f.remark,
+               f.create_by, f.create_time, f.update_by, f.update_time,
+               r.name as resident_name, r.id_card, r.phone, r.gender, r.age, r.district_id, r.district_name,
+               sr.blood_result, sr.blood_result_detail, sr.blood_result_date, sr.gastroscopy_result
+        from gc_follow_up f
+                 left join gc_resident r on f.resident_id = r.resident_id
+                 left join gc_screening_result sr on f.result_id = sr.result_id
+        where f.follow_up_id = #{followUpId}
+    </select>
+
+    <select id="selectFollowUpDetailList" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUp" resultMap="GcFollowUpDetailResult">
+        select f.follow_up_id, f.resident_id, f.result_id, f.follow_up_type, f.follow_up_status, f.follow_up_level,
+               f.assigned_user_id, f.assigned_user_name, f.assign_date, f.complete_date, f.remark,
+               f.create_by, f.create_time, f.update_by, f.update_time,
+               r.name as resident_name, r.id_card, r.phone, r.gender, r.age, r.district_id, r.district_name,
+               sr.blood_result, sr.blood_result_detail, sr.blood_result_date, sr.gastroscopy_result
+        from gc_follow_up f
+                 left join gc_resident r on f.resident_id = r.resident_id
+                 left join gc_screening_result sr on f.result_id = sr.result_id
+        <where>
+            <if test="residentId != null">
+                and f.resident_id = #{residentId}
+            </if>
+            <if test="resultId != null">
+                and f.result_id = #{resultId}
+            </if>
+            <if test="followUpType != null and followUpType != ''">
+                and f.follow_up_type = #{followUpType}
+            </if>
+            <if test="followUpStatus != null and followUpStatus != ''">
+                and f.follow_up_status = #{followUpStatus}
+            </if>
+            <if test="followUpLevel != null and followUpLevel != ''">
+                and f.follow_up_level = #{followUpLevel}
+            </if>
+            <if test="assignedUserId != null">
+                and f.assigned_user_id = #{assignedUserId}
+            </if>
+            <if test="params.residentName != null and params.residentName != ''">
+                and r.name like concat('%', #{params.residentName}, '%')
+            </if>
+            <if test="params.idCard != null and params.idCard != ''">
+                and r.id_card like concat('%', #{params.idCard}, '%')
+            </if>
+            <if test="params.phone != null and params.phone != ''">
+                and r.phone like concat('%', #{params.phone}, '%')
+            </if>
+            <if test="params.beginAssignDate != null and params.beginAssignDate != ''">
+                and date_format(f.assign_date,'%y%m%d') &gt;= date_format(#{params.beginAssignDate},'%y%m%d')
+            </if>
+            <if test="params.endAssignDate != null and params.endAssignDate != ''">
+                and date_format(f.assign_date,'%y%m%d') &lt;= date_format(#{params.endAssignDate},'%y%m%d')
+            </if>
+        </where>
+        order by f.follow_up_id desc
+    </select>
+
+    <select id="selectFollowUpByResidentId" parameterType="Long" resultMap="GcFollowUpResult">
+        <include refid="selectGcFollowUpVo"/>
+        where resident_id = #{residentId}
+        order by follow_up_id desc
+    </select>
+
+    <select id="checkFollowUpExists" resultType="Integer">
+        select count(1) from gc_follow_up
+        where resident_id = #{residentId}
+          and result_id = #{resultId}
+    </select>
+
+    <insert id="insertFollowUp" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUp" useGeneratedKeys="true" keyProperty="followUpId">
+        insert into gc_follow_up
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">resident_id,</if>
+            <if test="resultId != null">result_id,</if>
+            <if test="followUpType != null and followUpType != ''">follow_up_type,</if>
+            <if test="followUpStatus != null and followUpStatus != ''">follow_up_status,</if>
+            <if test="followUpLevel != null and followUpLevel != ''">follow_up_level,</if>
+            <if test="assignedUserId != null">assigned_user_id,</if>
+            <if test="assignedUserName != null and assignedUserName != ''">assigned_user_name,</if>
+            <if test="assignDate != null">assign_date,</if>
+            <if test="completeDate != null">complete_date,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">#{residentId},</if>
+            <if test="resultId != null">#{resultId},</if>
+            <if test="followUpType != null and followUpType != ''">#{followUpType},</if>
+            <if test="followUpStatus != null and followUpStatus != ''">#{followUpStatus},</if>
+            <if test="followUpLevel != null and followUpLevel != ''">#{followUpLevel},</if>
+            <if test="assignedUserId != null">#{assignedUserId},</if>
+            <if test="assignedUserName != null and assignedUserName != ''">#{assignedUserName},</if>
+            <if test="assignDate != null">#{assignDate},</if>
+            <if test="completeDate != null">#{completeDate},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateFollowUp" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUp">
+        update gc_follow_up
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="followUpStatus != null and followUpStatus != ''">follow_up_status = #{followUpStatus},</if>
+            <if test="followUpLevel != null and followUpLevel != ''">follow_up_level = #{followUpLevel},</if>
+            <if test="assignedUserId != null">assigned_user_id = #{assignedUserId},</if>
+            <if test="assignedUserName != null and assignedUserName != ''">assigned_user_name = #{assignedUserName},</if>
+            <if test="assignDate != null">assign_date = #{assignDate},</if>
+            <if test="completeDate != null">complete_date = #{completeDate},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where follow_up_id = #{followUpId}
+    </update>
+
+    <delete id="deleteFollowUpById" parameterType="Long">
+        delete from gc_follow_up where follow_up_id = #{followUpId}
+    </delete>
+
+    <delete id="deleteFollowUpByIds" parameterType="String">
+        delete from gc_follow_up where follow_up_id in
+        <foreach item="followUpId" collection="array" open="(" separator="," close=")">
+            #{followUpId}
+        </foreach>
+    </delete>
+
+</mapper>

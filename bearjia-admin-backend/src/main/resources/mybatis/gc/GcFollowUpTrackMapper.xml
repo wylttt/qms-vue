@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcFollowUpTrackMapper">
+
+    <resultMap id="GcFollowUpTrackResult" type="com.javaxiaobear.module.gc.domain.GcFollowUpTrack">
+        <id property="trackId" column="track_id"/>
+        <result property="followUpId" column="follow_up_id"/>
+        <result property="trackDate" column="track_date"/>
+        <result property="trackType" column="track_type"/>
+        <result property="trackResult" column="track_result"/>
+        <result property="trackContent" column="track_content"/>
+        <result property="nextTrackDate" column="next_track_date"/>
+        <result property="trackerUserId" column="tracker_user_id"/>
+        <result property="trackerUserName" column="tracker_user_name"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="GcFollowUpTrackDetailResult" type="com.javaxiaobear.module.gc.domain.GcFollowUpTrack" extends="GcFollowUpTrackResult">
+        <association property="followUp" javaType="com.javaxiaobear.module.gc.domain.GcFollowUp">
+            <id property="followUpId" column="follow_up_id"/>
+            <result property="residentId" column="resident_id"/>
+            <result property="followUpType" column="follow_up_type"/>
+            <result property="followUpStatus" column="follow_up_status"/>
+            <result property="followUpLevel" column="follow_up_level"/>
+        </association>
+        <association property="resident" javaType="com.javaxiaobear.module.gc.domain.GcResident">
+            <id property="residentId" column="resident_id"/>
+            <result property="name" column="resident_name"/>
+            <result property="idCard" column="id_card"/>
+            <result property="phone" column="phone"/>
+        </association>
+    </resultMap>
+
+    <sql id="selectGcFollowUpTrackVo">
+        select track_id, follow_up_id, track_date, track_type, track_result, track_content,
+               next_track_date, tracker_user_id, tracker_user_name,
+               create_by, create_time, update_by, update_time
+        from gc_follow_up_track
+    </sql>
+
+    <select id="selectFollowUpTrackList" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUpTrack" resultMap="GcFollowUpTrackResult">
+        <include refid="selectGcFollowUpTrackVo"/>
+        <where>
+            <if test="followUpId != null">
+                and follow_up_id = #{followUpId}
+            </if>
+            <if test="trackType != null and trackType != ''">
+                and track_type = #{trackType}
+            </if>
+            <if test="trackResult != null and trackResult != ''">
+                and track_result = #{trackResult}
+            </if>
+            <if test="trackerUserId != null">
+                and tracker_user_id = #{trackerUserId}
+            </if>
+            <if test="params.beginTrackDate != null and params.beginTrackDate != ''">
+                and date_format(track_date,'%y%m%d') &gt;= date_format(#{params.beginTrackDate},'%y%m%d')
+            </if>
+            <if test="params.endTrackDate != null and params.endTrackDate != ''">
+                and date_format(track_date,'%y%m%d') &lt;= date_format(#{params.endTrackDate},'%y%m%d')
+            </if>
+        </where>
+        order by track_id desc
+    </select>
+
+    <select id="selectFollowUpTrackById" parameterType="Long" resultMap="GcFollowUpTrackDetailResult">
+        select t.track_id, t.follow_up_id, t.track_date, t.track_type, t.track_result, t.track_content,
+               t.next_track_date, t.tracker_user_id, t.tracker_user_name,
+               t.create_by, t.create_time, t.update_by, t.update_time,
+               f.resident_id, f.follow_up_type, f.follow_up_status, f.follow_up_level,
+               r.name as resident_name, r.id_card, r.phone
+        from gc_follow_up_track t
+                 left join gc_follow_up f on t.follow_up_id = f.follow_up_id
+                 left join gc_resident r on f.resident_id = r.resident_id
+        where t.track_id = #{trackId}
+    </select>
+
+    <select id="selectFollowUpTrackDetailList" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUpTrack" resultMap="GcFollowUpTrackDetailResult">
+        select t.track_id, t.follow_up_id, t.track_date, t.track_type, t.track_result, t.track_content,
+               t.next_track_date, t.tracker_user_id, t.tracker_user_name,
+               t.create_by, t.create_time, t.update_by, t.update_time,
+               f.resident_id, f.follow_up_type, f.follow_up_status, f.follow_up_level,
+               r.name as resident_name, r.id_card, r.phone
+        from gc_follow_up_track t
+                 left join gc_follow_up f on t.follow_up_id = f.follow_up_id
+                 left join gc_resident r on f.resident_id = r.resident_id
+        <where>
+            <if test="followUpId != null">
+                and t.follow_up_id = #{followUpId}
+            </if>
+            <if test="trackType != null and trackType != ''">
+                and t.track_type = #{trackType}
+            </if>
+            <if test="trackResult != null and trackResult != ''">
+                and t.track_result = #{trackResult}
+            </if>
+            <if test="trackerUserId != null">
+                and t.tracker_user_id = #{trackerUserId}
+            </if>
+            <if test="params.residentName != null and params.residentName != ''">
+                and r.name like concat('%', #{params.residentName}, '%')
+            </if>
+            <if test="params.beginTrackDate != null and params.beginTrackDate != ''">
+                and date_format(t.track_date,'%y%m%d') &gt;= date_format(#{params.beginTrackDate},'%y%m%d')
+            </if>
+            <if test="params.endTrackDate != null and params.endTrackDate != ''">
+                and date_format(t.track_date,'%y%m%d') &lt;= date_format(#{params.endTrackDate},'%y%m%d')
+            </if>
+        </where>
+        order by t.track_id desc
+    </select>
+
+    <select id="selectTracksByFollowUpId" parameterType="Long" resultMap="GcFollowUpTrackResult">
+        <include refid="selectGcFollowUpTrackVo"/>
+        where follow_up_id = #{followUpId}
+        order by track_date desc
+    </select>
+
+    <insert id="insertFollowUpTrack" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUpTrack" useGeneratedKeys="true" keyProperty="trackId">
+        insert into gc_follow_up_track
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="followUpId != null">follow_up_id,</if>
+            <if test="trackDate != null">track_date,</if>
+            <if test="trackType != null and trackType != ''">track_type,</if>
+            <if test="trackResult != null and trackResult != ''">track_result,</if>
+            <if test="trackContent != null and trackContent != ''">track_content,</if>
+            <if test="nextTrackDate != null">next_track_date,</if>
+            <if test="trackerUserId != null">tracker_user_id,</if>
+            <if test="trackerUserName != null and trackerUserName != ''">tracker_user_name,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="followUpId != null">#{followUpId},</if>
+            <if test="trackDate != null">#{trackDate},</if>
+            <if test="trackType != null and trackType != ''">#{trackType},</if>
+            <if test="trackResult != null and trackResult != ''">#{trackResult},</if>
+            <if test="trackContent != null and trackContent != ''">#{trackContent},</if>
+            <if test="nextTrackDate != null">#{nextTrackDate},</if>
+            <if test="trackerUserId != null">#{trackerUserId},</if>
+            <if test="trackerUserName != null and trackerUserName != ''">#{trackerUserName},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateFollowUpTrack" parameterType="com.javaxiaobear.module.gc.domain.GcFollowUpTrack">
+        update gc_follow_up_track
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="trackDate != null">track_date = #{trackDate},</if>
+            <if test="trackType != null and trackType != ''">track_type = #{trackType},</if>
+            <if test="trackResult != null and trackResult != ''">track_result = #{trackResult},</if>
+            <if test="trackContent != null and trackContent != ''">track_content = #{trackContent},</if>
+            <if test="nextTrackDate != null">next_track_date = #{nextTrackDate},</if>
+            <if test="trackerUserId != null">tracker_user_id = #{trackerUserId},</if>
+            <if test="trackerUserName != null and trackerUserName != ''">tracker_user_name = #{trackerUserName},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where track_id = #{trackId}
+    </update>
+
+    <delete id="deleteFollowUpTrackById" parameterType="Long">
+        delete from gc_follow_up_track where track_id = #{trackId}
+    </delete>
+
+    <delete id="deleteFollowUpTrackByIds" parameterType="String">
+        delete from gc_follow_up_track where track_id in
+        <foreach item="trackId" collection="array" open="(" separator="," close=")">
+            #{trackId}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcResidentMapper">
+    
+    <resultMap type="GcResident" id="GcResidentResult">
+        <id     property="residentId"       column="resident_id"        />
+        <result property="name"             column="name"               />
+        <result property="age"              column="age"                />
+        <result property="gender"           column="gender"             />
+        <result property="idCardNo"         column="id_card_no"         />
+        <result property="address"          column="address"            />
+        <result property="province"         column="province"           />
+        <result property="city"             column="city"               />
+        <result property="district"         column="district"           />
+        <result property="street"           column="street"             />
+        <result property="community"        column="community"          />
+        <result property="contactPhone"     column="contact_phone"      />
+        <result property="isFocusGroup"     column="is_focus_group"     />
+        <result property="surveyorId"       column="surveyor_id"        />
+        <result property="appointmentSiteId" column="appointment_site_id" />
+        <result property="appointmentTime"  column="appointment_time"   />
+        <result property="samplingStatus"   column="sampling_status"    />
+        <result property="createSource"     column="create_source"      />
+        <result property="createBy"         column="create_by"          />
+        <result property="createTime"       column="create_time"        />
+        <result property="updateBy"         column="update_by"          />
+        <result property="updateTime"       column="update_time"        />
+        <result property="remark"           column="remark"             />
+    </resultMap>
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.vo.ResidentVO" id="ResidentVOResult">
+        <id     property="residentId"       column="resident_id"        />
+        <result property="name"             column="name"               />
+        <result property="age"              column="age"                />
+        <result property="gender"           column="gender"             />
+        <result property="idCardNo"         column="id_card_no"         />
+        <result property="address"          column="address"            />
+        <result property="province"         column="province"           />
+        <result property="city"             column="city"               />
+        <result property="district"         column="district"           />
+        <result property="street"           column="street"             />
+        <result property="community"        column="community"          />
+        <result property="contactPhone"     column="contact_phone"      />
+        <result property="isFocusGroup"     column="is_focus_group"     />
+        <result property="surveyorName"     column="surveyor_name"      />
+        <result property="appointmentSiteName" column="appointment_site_name" />
+        <result property="appointmentTime"  column="appointment_time"   />
+        <result property="samplingStatus"   column="sampling_status"    />
+        <result property="createSource"     column="create_source"      />
+        <result property="createTime"       column="create_time"        />
+    </resultMap>
+
+    <sql id="selectResidentVo">
+        select 
+            r.resident_id, r.name, r.age, r.gender, r.id_card_no, r.address,
+            r.province, r.city, r.district, r.street, r.community,
+            r.contact_phone, r.is_focus_group, r.surveyor_id,
+            r.appointment_site_id, r.appointment_time, r.sampling_status,
+            r.create_source, r.create_time,
+            s.real_name as surveyor_name,
+            site.site_name as appointment_site_name
+        from gc_resident r
+        left join gc_surveyor s on r.surveyor_id = s.surveyor_id
+        left join gc_sampling_site site on r.appointment_site_id = site.site_id
+    </sql>
+
+    <select id="selectResidentList" parameterType="GcResident" resultMap="ResidentVOResult">
+        <include refid="selectResidentVo"/>
+        <where>  
+            <if test="name != null and name != ''">
+                AND r.name like concat('%', #{name}, '%')
+            </if>
+            <if test="gender != null and gender != ''">
+                AND r.gender = #{gender}
+            </if>
+            <if test="idCardNo != null and idCardNo != ''">
+                AND r.id_card_no = #{idCardNo}
+            </if>
+            <if test="province != null and province != ''">
+                AND r.province = #{province}
+            </if>
+            <if test="city != null and city != ''">
+                AND r.city = #{city}
+            </if>
+            <if test="district != null and district != ''">
+                AND r.district = #{district}
+            </if>
+            <if test="street != null and street != ''">
+                AND r.street = #{street}
+            </if>
+            <if test="community != null and community != ''">
+                AND r.community = #{community}
+            </if>
+            <if test="contactPhone != null and contactPhone != ''">
+                AND r.contact_phone = #{contactPhone}
+            </if>
+            <if test="isFocusGroup != null">
+                AND r.is_focus_group = #{isFocusGroup}
+            </if>
+            <if test="surveyorId != null">
+                AND r.surveyor_id = #{surveyorId}
+            </if>
+            <if test="appointmentSiteId != null">
+                AND r.appointment_site_id = #{appointmentSiteId}
+            </if>
+            <if test="samplingStatus != null and samplingStatus != ''">
+                AND r.sampling_status = #{samplingStatus}
+            </if>
+            <if test="createSource != null and createSource != ''">
+                AND r.create_source = #{createSource}
+            </if>
+        </where>
+        order by r.create_time desc
+    </select>
+    
+    <select id="selectResidentById" parameterType="Long" resultMap="GcResidentResult">
+        select 
+            resident_id, name, age, gender, id_card_no, address,
+            province, city, district, street, community,
+            contact_phone, is_focus_group, surveyor_id,
+            appointment_site_id, appointment_time, sampling_status,
+            create_source, create_by, create_time, update_by, update_time, remark
+        from gc_resident
+        where resident_id = #{residentId}
+    </select>
+
+    <select id="selectResidentByIdCardNo" parameterType="String" resultMap="GcResidentResult">
+        select 
+            resident_id, name, age, gender, id_card_no, address,
+            province, city, district, street, community,
+            contact_phone, is_focus_group, surveyor_id,
+            appointment_site_id, appointment_time, sampling_status,
+            create_source, create_by, create_time, update_by, update_time, remark
+        from gc_resident
+        where id_card_no = #{idCardNo}
+    </select>
+        
+    <insert id="insertResident" parameterType="GcResident" useGeneratedKeys="true" keyProperty="residentId">
+        insert into gc_resident
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="age != null">age,</if>
+            <if test="gender != null and gender != ''">gender,</if>
+            <if test="idCardNo != null and idCardNo != ''">id_card_no,</if>
+            <if test="address != null and address != ''">address,</if>
+            <if test="province != null and province != ''">province,</if>
+            <if test="city != null and city != ''">city,</if>
+            <if test="district != null and district != ''">district,</if>
+            <if test="street != null and street != ''">street,</if>
+            <if test="community != null and community != ''">community,</if>
+            <if test="contactPhone != null and contactPhone != ''">contact_phone,</if>
+            <if test="isFocusGroup != null">is_focus_group,</if>
+            <if test="surveyorId != null">surveyor_id,</if>
+            <if test="appointmentSiteId != null">appointment_site_id,</if>
+            <if test="appointmentTime != null">appointment_time,</if>
+            <if test="samplingStatus != null and samplingStatus != ''">sampling_status,</if>
+            <if test="createSource != null and createSource != ''">create_source,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="age != null">#{age},</if>
+            <if test="gender != null and gender != ''">#{gender},</if>
+            <if test="idCardNo != null and idCardNo != ''">#{idCardNo},</if>
+            <if test="address != null and address != ''">#{address},</if>
+            <if test="province != null and province != ''">#{province},</if>
+            <if test="city != null and city != ''">#{city},</if>
+            <if test="district != null and district != ''">#{district},</if>
+            <if test="street != null and street != ''">#{street},</if>
+            <if test="community != null and community != ''">#{community},</if>
+            <if test="contactPhone != null and contactPhone != ''">#{contactPhone},</if>
+            <if test="isFocusGroup != null">#{isFocusGroup},</if>
+            <if test="surveyorId != null">#{surveyorId},</if>
+            <if test="appointmentSiteId != null">#{appointmentSiteId},</if>
+            <if test="appointmentTime != null">#{appointmentTime},</if>
+            <if test="samplingStatus != null and samplingStatus != ''">#{samplingStatus},</if>
+            <if test="createSource != null and createSource != ''">#{createSource},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            now()
+        </trim>
+    </insert>
+
+    <update id="updateResident" parameterType="GcResident">
+        update gc_resident
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="gender != null and gender != ''">gender = #{gender},</if>
+            <if test="address != null and address != ''">address = #{address},</if>
+            <if test="province != null and province != ''">province = #{province},</if>
+            <if test="city != null and city != ''">city = #{city},</if>
+            <if test="district != null and district != ''">district = #{district},</if>
+            <if test="street != null and street != ''">street = #{street},</if>
+            <if test="community != null and community != ''">community = #{community},</if>
+            <if test="contactPhone != null and contactPhone != ''">contact_phone = #{contactPhone},</if>
+            <if test="isFocusGroup != null">is_focus_group = #{isFocusGroup},</if>
+            <if test="surveyorId != null">surveyor_id = #{surveyorId},</if>
+            <if test="appointmentSiteId != null">appointment_site_id = #{appointmentSiteId},</if>
+            <if test="appointmentTime != null">appointment_time = #{appointmentTime},</if>
+            <if test="samplingStatus != null and samplingStatus != ''">sampling_status = #{samplingStatus},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = now()
+        </trim>
+        where resident_id = #{residentId}
+    </update>
+
+    <delete id="deleteResidentById" parameterType="Long">
+        delete from gc_resident where resident_id = #{residentId}
+    </delete>
+
+    <delete id="deleteResidentByIds" parameterType="Long">
+        delete from gc_resident where resident_id in
+        <foreach item="residentId" collection="array" open="(" separator="," close=")">
+            #{residentId}
+        </foreach>
+    </delete>
+
+    <select id="countResident" parameterType="GcResident" resultType="int">
+        select count(*) from gc_resident
+        <where>
+            <if test="district != null and district != ''">
+                AND district = #{district}
+            </if>
+            <if test="street != null and street != ''">
+                AND street = #{street}
+            </if>
+            <if test="community != null and community != ''">
+                AND community = #{community}
+            </if>
+        </where>
+    </select>
+
+    <select id="countFocusGroup" parameterType="GcResident" resultType="int">
+        select count(*) from gc_resident
+        where is_focus_group = 1
+        <if test="district != null and district != ''">
+            AND district = #{district}
+        </if>
+        <if test="street != null and street != ''">
+            AND street = #{street}
+        </if>
+        <if test="community != null and community != ''">
+            AND community = #{community}
+        </if>
+    </select>
+
+    <select id="countResidentByStreet" resultType="int">
+        select count(*) from gc_resident where street = #{street}
+    </select>
+
+    <select id="countResidentBySiteId" resultType="int">
+        select count(*) from gc_resident where appointment_site_id = #{siteId}
+    </select>
+
+</mapper>

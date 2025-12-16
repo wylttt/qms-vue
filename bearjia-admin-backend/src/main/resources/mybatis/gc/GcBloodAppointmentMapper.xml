@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcBloodAppointmentMapper">
+    
+    <resultMap type="GcBloodAppointment" id="GcBloodAppointmentResult">
+        <result property="appointmentId"    column="appointment_id"    />
+        <result property="residentId"    column="resident_id"    />
+        <result property="siteId"    column="site_id"    />
+        <result property="appointmentTime"    column="appointment_time"    />
+        <result property="appointmentStatus"    column="appointment_status"    />
+        <result property="thirdSystemId"    column="third_system_id"    />
+        <result property="barcodeNumber"    column="barcode_number"    />
+        <result property="pushStatus"    column="push_status"    />
+        <result property="pushTime"    column="push_time"    />
+        <result property="retryTimes"    column="retry_times"    />
+        <result property="samplingStatus"    column="sampling_status"    />
+        <result property="samplingTime"    column="sampling_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="residentName"    column="resident_name"    />
+        <result property="contactPhone"    column="contact_phone"    />
+        <result property="siteName"    column="site_name"    />
+        <result property="siteAddress"    column="site_address"    />
+    </resultMap>
+
+    <sql id="selectAppointmentVo">
+        select 
+            a.appointment_id, a.resident_id, a.site_id, a.appointment_time,
+            a.appointment_status, a.third_system_id, a.barcode_number,
+            a.push_status, a.push_time, a.retry_times,
+            a.sampling_status, a.sampling_time,
+            a.create_by, a.create_time, a.update_by, a.update_time,
+            r.resident_name, r.contact_phone,
+            s.site_name, s.site_address
+        from gc_blood_appointment a
+        left join gc_resident r on a.resident_id = r.resident_id
+        left join gc_sampling_site s on a.site_id = s.site_id
+    </sql>
+
+    <select id="selectAppointmentList" parameterType="GcBloodAppointment" resultMap="GcBloodAppointmentResult">
+        <include refid="selectAppointmentVo"/>
+        <where>  
+            <if test="residentId != null">
+                and a.resident_id = #{residentId}
+            </if>
+            <if test="siteId != null">
+                and a.site_id = #{siteId}
+            </if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">
+                and a.appointment_status = #{appointmentStatus}
+            </if>
+            <if test="pushStatus != null and pushStatus != ''">
+                and a.push_status = #{pushStatus}
+            </if>
+            <if test="samplingStatus != null and samplingStatus != ''">
+                and a.sampling_status = #{samplingStatus}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(a.appointment_time,'%Y-%m-%d') &gt;= date_format(#{params.beginTime},'%Y-%m-%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(a.appointment_time,'%Y-%m-%d') &lt;= date_format(#{params.endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        order by a.appointment_time desc
+    </select>
+    
+    <select id="selectAppointmentById" parameterType="Long" resultMap="GcBloodAppointmentResult">
+        <include refid="selectAppointmentVo"/>
+        where a.appointment_id = #{appointmentId}
+    </select>
+    
+    <select id="selectAppointmentByResidentId" parameterType="Long" resultMap="GcBloodAppointmentResult">
+        <include refid="selectAppointmentVo"/>
+        where a.resident_id = #{residentId}
+        order by a.appointment_time desc
+    </select>
+    
+    <select id="selectAppointmentBySiteId" parameterType="Long" resultMap="GcBloodAppointmentResult">
+        <include refid="selectAppointmentVo"/>
+        where a.site_id = #{siteId}
+        order by a.appointment_time desc
+    </select>
+    
+    <select id="selectPendingPushAppointments" resultMap="GcBloodAppointmentResult">
+        <include refid="selectAppointmentVo"/>
+        where a.push_status = 'pending' 
+          and a.appointment_status = 'pending'
+        order by a.create_time asc
+    </select>
+    
+    <select id="selectFailedPushAppointments" resultMap="GcBloodAppointmentResult">
+        <include refid="selectAppointmentVo"/>
+        where a.push_status = 'failed' 
+          and a.retry_times &lt; #{maxRetryTimes}
+          and a.appointment_status = 'pending'
+        order by a.update_time asc
+    </select>
+        
+    <insert id="insertAppointment" parameterType="GcBloodAppointment" useGeneratedKeys="true" keyProperty="appointmentId">
+        insert into gc_blood_appointment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">resident_id,</if>
+            <if test="siteId != null">site_id,</if>
+            <if test="appointmentTime != null">appointment_time,</if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">appointment_status,</if>
+            <if test="thirdSystemId != null">third_system_id,</if>
+            <if test="barcodeNumber != null">barcode_number,</if>
+            <if test="pushStatus != null and pushStatus != ''">push_status,</if>
+            <if test="pushTime != null">push_time,</if>
+            <if test="retryTimes != null">retry_times,</if>
+            <if test="samplingStatus != null and samplingStatus != ''">sampling_status,</if>
+            <if test="samplingTime != null">sampling_time,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">#{residentId},</if>
+            <if test="siteId != null">#{siteId},</if>
+            <if test="appointmentTime != null">#{appointmentTime},</if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">#{appointmentStatus},</if>
+            <if test="thirdSystemId != null">#{thirdSystemId},</if>
+            <if test="barcodeNumber != null">#{barcodeNumber},</if>
+            <if test="pushStatus != null and pushStatus != ''">#{pushStatus},</if>
+            <if test="pushTime != null">#{pushTime},</if>
+            <if test="retryTimes != null">#{retryTimes},</if>
+            <if test="samplingStatus != null and samplingStatus != ''">#{samplingStatus},</if>
+            <if test="samplingTime != null">#{samplingTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+         </trim>
+    </insert>
+
+    <update id="updateAppointment" parameterType="GcBloodAppointment">
+        update gc_blood_appointment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="residentId != null">resident_id = #{residentId},</if>
+            <if test="siteId != null">site_id = #{siteId},</if>
+            <if test="appointmentTime != null">appointment_time = #{appointmentTime},</if>
+            <if test="appointmentStatus != null and appointmentStatus != ''">appointment_status = #{appointmentStatus},</if>
+            <if test="thirdSystemId != null">third_system_id = #{thirdSystemId},</if>
+            <if test="barcodeNumber != null">barcode_number = #{barcodeNumber},</if>
+            <if test="pushStatus != null and pushStatus != ''">push_status = #{pushStatus},</if>
+            <if test="pushTime != null">push_time = #{pushTime},</if>
+            <if test="retryTimes != null">retry_times = #{retryTimes},</if>
+            <if test="samplingStatus != null and samplingStatus != ''">sampling_status = #{samplingStatus},</if>
+            <if test="samplingTime != null">sampling_time = #{samplingTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where appointment_id = #{appointmentId}
+    </update>
+    
+    <update id="updatePushStatus">
+        update gc_blood_appointment
+        set push_status = #{pushStatus},
+            push_time = sysdate(),
+            retry_times = retry_times + 1,
+            <if test="thirdSystemId != null">
+                third_system_id = #{thirdSystemId},
+            </if>
+            <if test="barcodeNumber != null">
+                barcode_number = #{barcodeNumber},
+            </if>
+            update_time = sysdate()
+        where appointment_id = #{appointmentId}
+    </update>
+    
+    <update id="updateSamplingStatus">
+        update gc_blood_appointment
+        set sampling_status = #{samplingStatus},
+            sampling_time = sysdate(),
+            appointment_status = 'completed',
+            update_time = sysdate()
+        where appointment_id = #{appointmentId}
+    </update>
+
+    <delete id="deleteAppointmentById" parameterType="Long">
+        delete from gc_blood_appointment where appointment_id = #{appointmentId}
+    </delete>
+
+    <delete id="deleteAppointmentByIds" parameterType="Long">
+        delete from gc_blood_appointment where appointment_id in 
+        <foreach item="appointmentId" collection="array" open="(" separator="," close=")">
+            #{appointmentId}
+        </foreach>
+    </delete>
+</mapper>

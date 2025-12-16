@@ -157,7 +157,7 @@
         </view>
       </view>
 
-      <!-- 问卷填写（复用问卷填写逻辑） -->
+      <!-- 问卷填写（使用QuestionnaireForm组件） -->
       <view v-else class="questionnaire-fill">
         <view class="questionnaire-header">
           <text class="template-name">{{ selectedTemplate.templateName }}</text>
@@ -166,20 +166,14 @@
           </view>
         </view>
 
-        <!-- 这里简化处理，实际应该复用questionnaire/fill.vue的逻辑 -->
-        <view class="questionnaire-placeholder">
-          <text class="placeholder-text">问卷内容区域</text>
-          <text class="placeholder-desc">（此处应集成完整的问卷填写组件）</text>
-        </view>
-
-        <view class="btn-group">
-          <view class="btn btn-secondary" @click="currentStep = 1">
-            <text>上一步</text>
-          </view>
-          <view class="btn btn-primary" @click="submitQuestionnaire">
-            <text>提交问卷</text>
-          </view>
-        </view>
+        <!-- 集成QuestionnaireForm组件 -->
+        <QuestionnaireForm
+          v-if="newResidentId"
+          :residentId="newResidentId"
+          :surveyorId="surveyorInfo.surveyorId"
+          :templateData="selectedTemplate"
+          @submit="handleQuestionnaireSubmit"
+        />
       </view>
     </view>
 
@@ -204,9 +198,15 @@
 </template>
 
 <script>
-import { addResident, getQuestionnaireTemplates, submitQuestionnaire } from '@/api/gc.js';
+import { addResident, getQuestionnaireTemplates } from '@/api/gc.js';
+import { smartOCRIdCard, validateIdCard } from '@/utils/ocrHelper.js';
+import QuestionnaireForm from '@/components/QuestionnaireForm.vue';
 
 export default {
+  components: {
+    QuestionnaireForm
+  },
+  
   data() {
     return {
       currentStep: 1,
@@ -275,23 +275,61 @@ export default {
     },
 
     // OCR识别身份证
-    ocrIdCard() {
-      uni.chooseImage({
-        count: 1,
-        sourceType: ['camera', 'album'],
-        success: (res) => {
-          uni.showLoading({ title: '识别中...' });
+    async ocrIdCard() {
+      try {
+        uni.showLoading({ title: '识别中...' });
+        
+        // 调用智能OCR识别（自动选择最优方案）
+        const result = await smartOCRIdCard();
+        
+        uni.hideLoading();
+        
+        if (result.success) {
+          // 填充识别结果
+          if (result.data.name) {
+            this.residentForm.residentName = result.data.name;
+          }
           
-          // TODO: 调用OCR接口识别
-          setTimeout(() => {
-            uni.hideLoading();
-            uni.showToast({
-              title: 'OCR功能开发中',
-              icon: 'none'
-            });
-          }, 1000);
+          if (result.data.idCard) {
+            this.residentForm.idCardNo = result.data.idCard;
+            // 验证身份证号
+            if (!validateIdCard(result.data.idCard)) {
+              uni.showModal({
+                title: '提示',
+                content: '识别的身份证号校验失败，请手动核对',
+                showCancel: false
+              });
+            } else {
+              // 自动解析身份证信息
+              this.parseIdCard();
+            }
+          }
+          
+          // 如果有地址信息，自动填充
+          if (result.data.address) {
+            this.residentForm.detailAddress = result.data.address;
+          }
+          
+          uni.showToast({
+            title: `识别成功（${result.method}）`,
+            icon: 'success',
+            duration: 2000
+          });
+        } else {
+          uni.showToast({
+            title: result.message || '识别失败，请手动输入',
+            icon: 'none',
+            duration: 2000
+          });
         }
-      });
+      } catch (error) {
+        uni.hideLoading();
+        console.error('OCR识别失败', error);
+        uni.showToast({
+          title: '识别失败，请手动输入',
+          icon: 'none'
+        });
+      }
     },
 
     // 解析身份证号
@@ -362,6 +400,12 @@ export default {
         return false;
       }
 
+      // 使用增强的身份证号验证（包含校验码）
+      if (!validateIdCard(idCardNo)) {
+        uni.showToast({ title: '身份证号校验失败', icon: 'none' });
+        return false;
+      }
+
       if (!gender) {
         uni.showToast({ title: '请选择性别', icon: 'none' });
         return false;
@@ -390,42 +434,19 @@ export default {
       this.selectedTemplate = null;
     },
 
-    // 提交问卷
-    async submitQuestionnaire() {
-      // TODO: 实际应该收集问卷答案并提交
-      // 这里简化处理
+    // 处理问卷提交成功
+    handleQuestionnaireSubmit(result) {
+      const { totalScore, isFocusGroup } = result;
       
-      uni.showModal({
-        title: '提示',
-        content: '确定提交问卷吗？',
-        success: async (res) => {
-          if (res.confirm) {
-            try {
-              uni.showLoading({ title: '提交中...' });
-
-              // 模拟提交
-              await new Promise(resolve => setTimeout(resolve, 1000));
-
-              uni.hideLoading();
-              
-              uni.showToast({
-                title: '提交成功',
-                icon: 'success'
-              });
-
-              // 进入完成步骤
-              this.currentStep = 3;
-            } catch (error) {
-              uni.hideLoading();
-              console.error('提交问卷失败:', error);
-              uni.showToast({
-                title: '提交失败',
-                icon: 'none'
-              });
-            }
-          }
-        }
+      uni.showToast({
+        title: '提交成功',
+        icon: 'success'
       });
+
+      // 进入完成步骤
+      setTimeout(() => {
+        this.currentStep = 3;
+      }, 1500);
     },
 
     // 继续录入

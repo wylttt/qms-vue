@@ -136,6 +136,7 @@ import {
   getStreets,
   getCommunities
 } from '@/api/gc.js';
+import { smartOCRIdCard, validateIdCard } from '@/utils/ocrHelper.js';
 
 export default {
   data() {
@@ -178,32 +179,61 @@ export default {
   methods: {
     // OCR识别身份证
     async ocrIdCard() {
-      // 方式一：使用微信小程序原生OCR（需要微信插件）
-      // 方式二：拍照上传到后端识别
-      
-      uni.chooseImage({
-        count: 1,
-        sourceType: ['camera', 'album'],
-        success: (res) => {
-          uni.showLoading({ title: '识别中...' });
+      try {
+        uni.showLoading({ title: '识别中...' });
+        
+        // 调用智能OCR识别（自动选择最优方案）
+        const result = await smartOCRIdCard();
+        
+        uni.hideLoading();
+        
+        if (result.success) {
+          // 填充识别结果
+          if (result.data.name) {
+            this.formData.realName = result.data.name;
+          }
           
-          // TODO: 上传图片到后端进行OCR识别
-          // 或使用微信小程序OCR插件
+          if (result.data.idCard) {
+            this.formData.idCardNo = result.data.idCard;
+            // 验证身份证号
+            if (!validateIdCard(result.data.idCard)) {
+              uni.showModal({
+                title: '提示',
+                content: '识别的身份证号校验失败，请手动核对',
+                showCancel: false
+              });
+            } else {
+              // 自动解析身份证信息
+              this.parseIdCard();
+            }
+          }
           
-          // 模拟识别结果
-          setTimeout(() => {
-            uni.hideLoading();
-            this.formData.realName = '张三';
-            this.formData.idCardNo = '360123199001011234';
-            this.parseIdCard();
-            
-            uni.showToast({
-              title: '识别成功',
-              icon: 'success'
-            });
-          }, 1500);
+          // 如果有地址信息，尝试自动填充行政区划
+          if (result.data.address) {
+            this.formData.detailAddress = result.data.address;
+            // TODO: 可以调用parseRegionFromAddress解析行政区划
+          }
+          
+          uni.showToast({
+            title: `识别成功（${result.method}）`,
+            icon: 'success',
+            duration: 2000
+          });
+        } else {
+          uni.showToast({
+            title: result.message || '识别失败，请手动输入',
+            icon: 'none',
+            duration: 2000
+          });
         }
-      });
+      } catch (error) {
+        uni.hideLoading();
+        console.error('OCR识别失败', error);
+        uni.showToast({
+          title: '识别失败，请手动输入',
+          icon: 'none'
+        });
+      }
     },
 
     // 解析身份证号
@@ -356,6 +386,12 @@ export default {
 
       if (!/^\d{17}[\dXx]$/.test(this.formData.idCardNo)) {
         uni.showToast({ title: '身份证号格式不正确', icon: 'none' });
+        return false;
+      }
+
+      // 使用增强的身份证号验证（包含校验码）
+      if (!validateIdCard(this.formData.idCardNo)) {
+        uni.showToast({ title: '身份证号校验失败', icon: 'none' });
         return false;
       }
 

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcQuestionnaireRecordMapper">
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireRecord" id="GcQuestionnaireRecordResult">
+        <id     property="recordId"             column="record_id"        />
+        <result property="residentId"           column="resident_id"      />
+        <result property="templateId"           column="template_id"      />
+        <result property="answerContent"        column="answer_content"   />
+        <result property="totalScore"           column="total_score"      />
+        <result property="isFocusGroup"         column="is_focus_group"   />
+        <result property="surveyorId"           column="surveyor_id"      />
+        <result property="fillTime"             column="fill_time"        />
+        <result property="createBy"             column="create_by"        />
+        <result property="createTime"           column="create_time"      />
+        <result property="updateBy"             column="update_by"        />
+        <result property="updateTime"           column="update_time"      />
+        <result property="remark"               column="remark"           />
+    </resultMap>
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.vo.QuestionnaireRecordVO" id="QuestionnaireRecordVOResult">
+        <id     property="recordId"             column="record_id"        />
+        <result property="residentName"         column="resident_name"    />
+        <result property="idCardNo"             column="id_card_no"       />
+        <result property="fullRegionName"       column="full_region_name" />
+        <result property="templateName"         column="template_name"    />
+        <result property="totalScore"           column="total_score"      />
+        <result property="isFocusGroup"         column="is_focus_group"   />
+        <result property="surveyorName"         column="surveyor_name"    />
+        <result property="fillTime"             column="fill_time"        />
+    </resultMap>
+
+    <sql id="selectRecordVo">
+        select 
+            qr.record_id, qr.resident_id, qr.template_id, qr.answer_content,
+            qr.total_score, qr.is_focus_group, qr.surveyor_id, qr.fill_time,
+            qr.create_time, qr.remark,
+            r.real_name as resident_name,
+            r.id_card_no,
+            CONCAT(p.region_name, c.region_name, d.region_name, s.region_name, cm.region_name) as full_region_name,
+            t.template_name,
+            sv.real_name as surveyor_name
+        from gc_questionnaire_record qr
+        left join gc_resident r on qr.resident_id = r.resident_id
+        left join gc_region p on r.province_id = p.region_id
+        left join gc_region c on r.city_id = c.region_id
+        left join gc_region d on r.district_id = d.region_id
+        left join gc_region s on r.street_id = s.region_id
+        left join gc_region cm on r.community_id = cm.region_id
+        left join gc_questionnaire_template t on qr.template_id = t.template_id
+        left join gc_surveyor sv on qr.surveyor_id = sv.surveyor_id
+    </sql>
+
+    <select id="selectRecordList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireRecord" resultMap="QuestionnaireRecordVOResult">
+        <include refid="selectRecordVo"/>
+        <where>
+            <if test="residentId != null">
+                AND qr.resident_id = #{residentId}
+            </if>
+            <if test="templateId != null">
+                AND qr.template_id = #{templateId}
+            </if>
+            <if test="isFocusGroup != null">
+                AND qr.is_focus_group = #{isFocusGroup}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                AND date_format(qr.fill_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                AND date_format(qr.fill_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
+        </where>
+        order by qr.fill_time desc
+    </select>
+
+    <select id="selectRecordById" parameterType="Long" resultMap="GcQuestionnaireRecordResult">
+        select record_id, resident_id, template_id, answer_content, total_score, 
+               is_focus_group, surveyor_id, fill_time, create_time, remark
+        from gc_questionnaire_record
+        where record_id = #{recordId}
+    </select>
+
+    <select id="selectRecordByResidentAndTemplate" resultMap="GcQuestionnaireRecordResult">
+        select record_id, resident_id, template_id, answer_content, total_score, 
+               is_focus_group, surveyor_id, fill_time
+        from gc_questionnaire_record
+        where resident_id = #{residentId} and template_id = #{templateId}
+        limit 1
+    </select>
+
+    <insert id="insertRecord" parameterType="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireRecord" useGeneratedKeys="true" keyProperty="recordId">
+        insert into gc_questionnaire_record(
+            <if test="residentId != null">resident_id,</if>
+            <if test="templateId != null">template_id,</if>
+            <if test="answerContent != null and answerContent != ''">answer_content,</if>
+            <if test="totalScore != null">total_score,</if>
+            <if test="isFocusGroup != null">is_focus_group,</if>
+            <if test="surveyorId != null">surveyor_id,</if>
+            <if test="fillTime != null">fill_time,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        )values(
+            <if test="residentId != null">#{residentId},</if>
+            <if test="templateId != null">#{templateId},</if>
+            <if test="answerContent != null and answerContent != ''">#{answerContent},</if>
+            <if test="totalScore != null">#{totalScore},</if>
+            <if test="isFocusGroup != null">#{isFocusGroup},</if>
+            <if test="surveyorId != null">#{surveyorId},</if>
+            <if test="fillTime != null">#{fillTime},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        )
+    </insert>
+
+    <update id="updateRecord" parameterType="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireRecord">
+        update gc_questionnaire_record
+        <set>
+            <if test="answerContent != null and answerContent != ''">answer_content = #{answerContent},</if>
+            <if test="totalScore != null">total_score = #{totalScore},</if>
+            <if test="isFocusGroup != null">is_focus_group = #{isFocusGroup},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </set>
+        where record_id = #{recordId}
+    </update>
+
+    <delete id="deleteRecordById" parameterType="Long">
+        delete from gc_questionnaire_record where record_id = #{recordId}
+    </delete>
+
+    <delete id="deleteRecordByIds" parameterType="Long">
+        delete from gc_questionnaire_record where record_id in
+        <foreach item="recordId" collection="array" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </delete>
+
+</mapper>

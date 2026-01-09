@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcSamplingSiteMapper">
+    
+    <resultMap type="com.javaxiaobear.module.gc.domain.entity.GcSamplingSite" id="GcSamplingSiteResult">
+        <result property="siteId"    column="site_id"    />
+        <result property="siteName"    column="site_name"    />
+        <result property="regionId"    column="region_id"    />
+        <result property="address"    column="address"    />
+        <result property="streetManagerId"    column="street_manager_id"    />
+        <result property="streetManagerName"    column="street_manager_name"    />
+        <result property="streetManagerPhone"    column="street_manager_phone"    />
+        <result property="siteManagerId"    column="site_manager_id"    />
+        <result property="siteManagerName"    column="site_manager_name"    />
+        <result property="siteManagerPhone"    column="site_manager_phone"    />
+        <result property="status"    column="status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="regionName"    column="region_name"    />
+    </resultMap>
+
+    <sql id="selectGcSamplingSiteVo">
+        select s.site_id, s.site_name, s.region_id, s.address, s.street_manager_id, s.street_manager_name, 
+               s.street_manager_phone, s.site_manager_id, s.site_manager_name, s.site_manager_phone, 
+               s.status, s.create_by, s.create_time, s.update_by, s.update_time, s.remark,
+               r.region_name
+        from gc_sampling_site s
+        left join gc_region r on s.region_id = r.region_id
+    </sql>
+
+    <select id="selectGcSamplingSiteList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcSamplingSite" resultMap="GcSamplingSiteResult">
+        <include refid="selectGcSamplingSiteVo"/>
+        <where>  
+            <if test="siteName != null  and siteName != ''"> and s.site_name like concat('%', #{siteName}, '%')</if>
+            <if test="regionId != null "> and s.region_id = #{regionId}</if>
+            <if test="status != null  and status != ''"> and s.status = #{status}</if>
+        </where>
+        order by s.create_time desc
+    </select>
+    
+    <select id="selectGcSamplingSiteBySiteId" parameterType="Long" resultMap="GcSamplingSiteResult">
+        <include refid="selectGcSamplingSiteVo"/>
+        where s.site_id = #{siteId}
+    </select>
+        
+    <insert id="insertGcSamplingSite" parameterType="com.javaxiaobear.module.gc.domain.entity.GcSamplingSite" useGeneratedKeys="true" keyProperty="siteId">
+        insert into gc_sampling_site
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="siteName != null and siteName != ''">site_name,</if>
+            <if test="regionId != null">region_id,</if>
+            <if test="address != null">address,</if>
+            <if test="streetManagerId != null">street_manager_id,</if>
+            <if test="streetManagerName != null">street_manager_name,</if>
+            <if test="streetManagerPhone != null">street_manager_phone,</if>
+            <if test="siteManagerId != null">site_manager_id,</if>
+            <if test="siteManagerName != null">site_manager_name,</if>
+            <if test="siteManagerPhone != null">site_manager_phone,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="remark != null">remark,</if>
+            create_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="siteName != null and siteName != ''">#{siteName},</if>
+            <if test="regionId != null">#{regionId},</if>
+            <if test="address != null">#{address},</if>
+            <if test="streetManagerId != null">#{streetManagerId},</if>
+            <if test="streetManagerName != null">#{streetManagerName},</if>
+            <if test="streetManagerPhone != null">#{streetManagerPhone},</if>
+            <if test="siteManagerId != null">#{siteManagerId},</if>
+            <if test="siteManagerName != null">#{siteManagerName},</if>
+            <if test="siteManagerPhone != null">#{siteManagerPhone},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="remark != null">#{remark},</if>
+            sysdate()
+         </trim>
+    </insert>
+
+    <update id="updateGcSamplingSite" parameterType="com.javaxiaobear.module.gc.domain.entity.GcSamplingSite">
+        update gc_sampling_site
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="siteName != null and siteName != ''">site_name = #{siteName},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="streetManagerId != null">street_manager_id = #{streetManagerId},</if>
+            <if test="streetManagerName != null">street_manager_name = #{streetManagerName},</if>
+            <if test="streetManagerPhone != null">street_manager_phone = #{streetManagerPhone},</if>
+            <if test="siteManagerId != null">site_manager_id = #{siteManagerId},</if>
+            <if test="siteManagerName != null">site_manager_name = #{siteManagerName},</if>
+            <if test="siteManagerPhone != null">site_manager_phone = #{siteManagerPhone},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </trim>
+        where site_id = #{siteId}
+    </update>
+
+    <delete id="deleteGcSamplingSiteBySiteId" parameterType="Long">
+        delete from gc_sampling_site where site_id = #{siteId}
+    </delete>
+
+    <delete id="deleteGcSamplingSiteBySiteIds" parameterType="Long">
+        delete from gc_sampling_site where site_id in 
+        <foreach item="siteId" collection="array" open="(" separator="," close=")">
+            #{siteId}
+        </foreach>
+    </delete>
+</mapper>

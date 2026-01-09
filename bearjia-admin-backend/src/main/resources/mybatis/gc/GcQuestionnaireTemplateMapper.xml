@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcQuestionnaireTemplateMapper">
+
+    <resultMap type="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireTemplate" id="GcQuestionnaireTemplateResult">
+        <id     property="templateId"           column="template_id"      />
+        <result property="templateName"         column="template_name"    />
+        <result property="templateCode"         column="template_code"    />
+        <result property="version"              column="version"          />
+        <result property="description"          column="description"      />
+        <result property="templateContent"      column="template_content" />
+        <result property="focusGroupThreshold"  column="focus_group_threshold" />
+        <result property="isActive"             column="is_active"        />
+        <result property="status"               column="status"           />
+        <result property="createBy"             column="create_by"        />
+        <result property="createTime"           column="create_time"      />
+        <result property="updateBy"             column="update_by"        />
+        <result property="updateTime"           column="update_time"      />
+        <result property="remark"               column="remark"           />
+    </resultMap>
+
+    <sql id="selectTemplateVo">
+        select template_id, template_name, template_code, version, description, 
+               template_content, focus_group_threshold, is_active, status,
+               create_by, create_time, update_by, update_time, remark
+        from gc_questionnaire_template
+    </sql>
+
+    <select id="selectTemplateList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireTemplate" resultMap="GcQuestionnaireTemplateResult">
+        <include refid="selectTemplateVo"/>
+        <where>
+            <if test="templateName != null and templateName != ''">
+                AND template_name like concat('%', #{templateName}, '%')
+            </if>
+            <if test="templateCode != null and templateCode != ''">
+                AND template_code = #{templateCode}
+            </if>
+            <if test="version != null and version != ''">
+                AND version = #{version}
+            </if>
+            <if test="isActive != null">
+                AND is_active = #{isActive}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        order by is_active desc, create_time desc
+    </select>
+
+    <select id="selectTemplateById" parameterType="Long" resultMap="GcQuestionnaireTemplateResult">
+        <include refid="selectTemplateVo"/>
+        where template_id = #{templateId}
+    </select>
+
+    <select id="selectTemplateByCode" parameterType="String" resultMap="GcQuestionnaireTemplateResult">
+        <include refid="selectTemplateVo"/>
+        where template_code = #{templateCode}
+        limit 1
+    </select>
+
+    <select id="selectActiveTemplates" resultMap="GcQuestionnaireTemplateResult">
+        <include refid="selectTemplateVo"/>
+        where is_active = 1 and status = '0'
+        order by create_time desc
+    </select>
+
+    <select id="checkTemplateInUse" parameterType="Long" resultType="int">
+        select count(1) from gc_questionnaire_record where template_id = #{templateId}
+    </select>
+
+    <insert id="insertTemplate" parameterType="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireTemplate" useGeneratedKeys="true" keyProperty="templateId">
+        insert into gc_questionnaire_template(
+            <if test="templateName != null and templateName != ''">template_name,</if>
+            <if test="templateCode != null and templateCode != ''">template_code,</if>
+            <if test="version != null and version != ''">version,</if>
+            <if test="description != null and description != ''">description,</if>
+            <if test="templateContent != null and templateContent != ''">template_content,</if>
+            <if test="focusGroupThreshold != null">focus_group_threshold,</if>
+            <if test="isActive != null">is_active,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        )values(
+            <if test="templateName != null and templateName != ''">#{templateName},</if>
+            <if test="templateCode != null and templateCode != ''">#{templateCode},</if>
+            <if test="version != null and version != ''">#{version},</if>
+            <if test="description != null and description != ''">#{description},</if>
+            <if test="templateContent != null and templateContent != ''">#{templateContent},</if>
+            <if test="focusGroupThreshold != null">#{focusGroupThreshold},</if>
+            <if test="isActive != null">#{isActive},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        )
+    </insert>
+
+    <update id="updateTemplate" parameterType="com.javaxiaobear.module.gc.domain.entity.GcQuestionnaireTemplate">
+        update gc_questionnaire_template
+        <set>
+            <if test="templateName != null and templateName != ''">template_name = #{templateName},</if>
+            <if test="version != null and version != ''">version = #{version},</if>
+            <if test="description != null and description != ''">description = #{description},</if>
+            <if test="templateContent != null and templateContent != ''">template_content = #{templateContent},</if>
+            <if test="focusGroupThreshold != null">focus_group_threshold = #{focusGroupThreshold},</if>
+            <if test="isActive != null">is_active = #{isActive},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </set>
+        where template_id = #{templateId}
+    </update>
+
+    <delete id="deleteTemplateById" parameterType="Long">
+        delete from gc_questionnaire_template where template_id = #{templateId}
+    </delete>
+
+    <delete id="deleteTemplateByIds" parameterType="Long">
+        delete from gc_questionnaire_template where template_id in
+        <foreach item="templateId" collection="array" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
+    </delete>
+
+</mapper>

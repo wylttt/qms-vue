@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcPushLogMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="PushLogResult" type="com.javaxiaobear.module.gc.domain.entity.GcPushLog">
+        <id property="logId" column="log_id"/>
+        <result property="businessType" column="business_type"/>
+        <result property="businessId" column="business_id"/>
+        <result property="pushDirection" column="push_direction"/>
+        <result property="requestUrl" column="request_url"/>
+        <result property="requestMethod" column="request_method"/>
+        <result property="requestHeaders" column="request_headers"/>
+        <result property="requestBody" column="request_body"/>
+        <result property="responseStatus" column="response_status"/>
+        <result property="responseHeaders" column="response_headers"/>
+        <result property="responseBody" column="response_body"/>
+        <result property="costTime" column="cost_time"/>
+        <result property="pushStatus" column="push_status"/>
+        <result property="failReason" column="fail_reason"/>
+        <result property="retryCount" column="retry_count"/>
+        <result property="nextRetryTime" column="next_retry_time"/>
+        <result property="pushTime" column="push_time"/>
+        <result property="operatorId" column="operator_id"/>
+        <result property="operatorName" column="operator_name"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <!-- 基础查询SQL片段 -->
+    <sql id="selectPushLogVo">
+        select 
+            log_id, business_type, business_id, push_direction,
+            request_url, request_method, request_headers, request_body,
+            response_status, response_headers, response_body, cost_time,
+            push_status, fail_reason, retry_count, next_retry_time, push_time,
+            operator_id, operator_name,
+            create_by, create_time, update_by, update_time, remark
+        from gc_push_log
+    </sql>
+
+    <!-- 查询推送日志列表 -->
+    <select id="selectPushLogList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcPushLog"
+            resultMap="PushLogResult">
+        <include refid="selectPushLogVo"/>
+        <where>
+            <if test="businessType != null and businessType != ''">
+                AND business_type = #{businessType}
+            </if>
+            <if test="businessId != null">
+                AND business_id = #{businessId}
+            </if>
+            <if test="pushDirection != null and pushDirection != ''">
+                AND push_direction = #{pushDirection}
+            </if>
+            <if test="pushStatus != null and pushStatus != ''">
+                AND push_status = #{pushStatus}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 查询推送日志详情 -->
+    <select id="selectPushLogById" parameterType="Long" resultMap="PushLogResult">
+        <include refid="selectPushLogVo"/>
+        where log_id = #{logId}
+    </select>
+
+    <!-- 新增推送日志 -->
+    <insert id="insertPushLog" parameterType="com.javaxiaobear.module.gc.domain.entity.GcPushLog"
+            useGeneratedKeys="true" keyProperty="logId">
+        insert into gc_push_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="businessType != null and businessType != ''">business_type,</if>
+            <if test="businessId != null">business_id,</if>
+            <if test="pushDirection != null and pushDirection != ''">push_direction,</if>
+            <if test="requestUrl != null and requestUrl != ''">request_url,</if>
+            <if test="requestMethod != null and requestMethod != ''">request_method,</if>
+            <if test="requestHeaders != null and requestHeaders != ''">request_headers,</if>
+            <if test="requestBody != null and requestBody != ''">request_body,</if>
+            <if test="responseStatus != null">response_status,</if>
+            <if test="responseHeaders != null and responseHeaders != ''">response_headers,</if>
+            <if test="responseBody != null and responseBody != ''">response_body,</if>
+            <if test="costTime != null">cost_time,</if>
+            <if test="pushStatus != null and pushStatus != ''">push_status,</if>
+            <if test="failReason != null and failReason != ''">fail_reason,</if>
+            <if test="retryCount != null">retry_count,</if>
+            <if test="nextRetryTime != null">next_retry_time,</if>
+            <if test="pushTime != null">push_time,</if>
+            <if test="operatorId != null">operator_id,</if>
+            <if test="operatorName != null and operatorName != ''">operator_name,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="businessType != null and businessType != ''">#{businessType},</if>
+            <if test="businessId != null">#{businessId},</if>
+            <if test="pushDirection != null and pushDirection != ''">#{pushDirection},</if>
+            <if test="requestUrl != null and requestUrl != ''">#{requestUrl},</if>
+            <if test="requestMethod != null and requestMethod != ''">#{requestMethod},</if>
+            <if test="requestHeaders != null and requestHeaders != ''">#{requestHeaders},</if>
+            <if test="requestBody != null and requestBody != ''">#{requestBody},</if>
+            <if test="responseStatus != null">#{responseStatus},</if>
+            <if test="responseHeaders != null and responseHeaders != ''">#{responseHeaders},</if>
+            <if test="responseBody != null and responseBody != ''">#{responseBody},</if>
+            <if test="costTime != null">#{costTime},</if>
+            <if test="pushStatus != null and pushStatus != ''">#{pushStatus},</if>
+            <if test="failReason != null and failReason != ''">#{failReason},</if>
+            <if test="retryCount != null">#{retryCount},</if>
+            <if test="nextRetryTime != null">#{nextRetryTime},</if>
+            <if test="pushTime != null">#{pushTime},</if>
+            <if test="operatorId != null">#{operatorId},</if>
+            <if test="operatorName != null and operatorName != ''">#{operatorName},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <!-- 修改推送日志 -->
+    <update id="updatePushLog" parameterType="com.javaxiaobear.module.gc.domain.entity.GcPushLog">
+        update gc_push_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="businessType != null and businessType != ''">business_type = #{businessType},</if>
+            <if test="businessId != null">business_id = #{businessId},</if>
+            <if test="pushDirection != null and pushDirection != ''">push_direction = #{pushDirection},</if>
+            <if test="requestUrl != null and requestUrl != ''">request_url = #{requestUrl},</if>
+            <if test="requestMethod != null and requestMethod != ''">request_method = #{requestMethod},</if>
+            <if test="requestHeaders != null">request_headers = #{requestHeaders},</if>
+            <if test="requestBody != null">request_body = #{requestBody},</if>
+            <if test="responseStatus != null">response_status = #{responseStatus},</if>
+            <if test="responseHeaders != null">response_headers = #{responseHeaders},</if>
+            <if test="responseBody != null">response_body = #{responseBody},</if>
+            <if test="costTime != null">cost_time = #{costTime},</if>
+            <if test="pushStatus != null and pushStatus != ''">push_status = #{pushStatus},</if>
+            <if test="failReason != null">fail_reason = #{failReason},</if>
+            <if test="retryCount != null">retry_count = #{retryCount},</if>
+            <if test="nextRetryTime != null">next_retry_time = #{nextRetryTime},</if>
+            <if test="pushTime != null">push_time = #{pushTime},</if>
+            <if test="operatorId != null">operator_id = #{operatorId},</if>
+            <if test="operatorName != null and operatorName != ''">operator_name = #{operatorName},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = now(),
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where log_id = #{logId}
+    </update>
+
+    <!-- 删除推送日志 -->
+    <delete id="deletePushLogById" parameterType="Long">
+        delete from gc_push_log where log_id = #{logId}
+    </delete>
+
+    <!-- 批量删除推送日志 -->
+    <delete id="deletePushLogByIds" parameterType="Long">
+        delete from gc_push_log where log_id in
+        <foreach collection="array" item="logId" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+
+    <!-- 根据业务ID查询推送日志 -->
+    <select id="selectPushLogByBusinessId" resultMap="PushLogResult">
+        <include refid="selectPushLogVo"/>
+        where business_type = #{businessType}
+        and business_id = #{businessId}
+        order by create_time desc
+    </select>
+
+    <!-- 查询需要重试的推送日志 -->
+    <select id="selectRetryPushLogs" resultMap="PushLogResult">
+        <include refid="selectPushLogVo"/>
+        where push_status = '2'
+        and retry_count &lt; 3
+        and next_retry_time &lt;= now()
+        order by next_retry_time asc
+        limit 100
+    </select>
+
+</mapper>

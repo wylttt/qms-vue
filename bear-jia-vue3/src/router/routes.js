@@ -93,6 +93,72 @@ export const constantRoutes = [
             }
         ],
     },
+  // 胃癌筛查模块路由
+  {
+    path: '/gc',
+    name: 'GastricCancer',
+    component: () => import(/* webpackChunkName: "layout" */ '@/layout/BaseLayout.vue'),
+    meta: {
+      title: '胃癌筛查',
+      icon: 'medicine-box'
+    },
+    children: [
+      {
+        path: 'resident',
+        name: 'GcResident',
+        component: () => import(/* webpackChunkName: "gc" */ '@/views/gc/resident/index.vue'),
+        meta: {
+          title: '居民管理',
+          icon: 'team'
+        }
+      },
+      {
+        path: 'questionnaire',
+        name: 'GcQuestionnaire',
+        component: () => import(/* webpackChunkName: "gc" */ '@/views/gc/questionnaire/index.vue'),
+        meta: {
+          title: '问卷管理',
+          icon: 'form'
+        }
+      },
+      {
+        path: 'task',
+        name: 'GcTask',
+        component: () => import(/* webpackChunkName: "gc" */ '@/views/gc/task/index.vue'),
+        meta: {
+          title: '任务管理',
+          icon: 'project'
+        }
+      },
+      {
+        path: 'screening-result',
+        name: 'GcScreeningResult',
+        component: () => import(/* webpackChunkName: "gc" */ '@/views/gc/screening-result/index.vue'),
+        meta: {
+          title: '筛查结果',
+          icon: 'file-search'
+        }
+      },
+      {
+        path: 'follow-up',
+        name: 'GcFollowUp',
+        component: () => import(/* webpackChunkName: "gc" */ '@/views/gc/follow-up/index.vue'),
+        meta: {
+          title: '随访管理',
+          icon: 'calendar'
+        }
+      },
+      {
+        path: 'statistics',
+        name: 'GcStatistics',
+        component: () => import(/* webpackChunkName: "gc" */ '@/views/gc/statistics/index.vue'),
+        meta: {
+          title: '统计分析',
+          icon: 'bar-chart'
+        }
+      }
+    ]
+  },
   // 前台路由
   ...frontendRoutes
 ];

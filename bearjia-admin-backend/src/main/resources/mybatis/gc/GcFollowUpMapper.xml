@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcFollowUpMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="FollowUpResult" type="com.javaxiaobear.module.gc.domain.entity.GcFollowUp">
+        <id property="followUpId" column="follow_up_id"/>
+        <result property="residentId" column="resident_id"/>
+        <result property="resultId" column="result_id"/>
+        <result property="followUpReason" column="follow_up_reason"/>
+        <result property="followUpStatus" column="follow_up_status"/>
+        <result property="trackerUserId" column="tracker_user_id"/>
+        <result property="trackerUserName" column="tracker_user_name"/>
+        <result property="plannedVisitCount" column="planned_visit_count"/>
+        <result property="actualVisitCount" column="actual_visit_count"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="lastVisitTime" column="last_visit_time"/>
+        <result property="followUpConclusion" column="follow_up_conclusion"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <!-- 查询随访对象列表 -->
+    <select id="selectFollowUpList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcFollowUp"
+            resultType="map">
+        select 
+            f.follow_up_id,
+            f.resident_id,
+            r.real_name as resident_name,
+            r.id_card_no,
+            r.gender,
+            r.age,
+            r.phone_number,
+            CONCAT(
+                IFNULL(p.region_name, ''),
+                IFNULL(c.region_name, ''),
+                IFNULL(d.region_name, ''),
+                IFNULL(s.region_name, ''),
+                IFNULL(cm.region_name, '')
+            ) as full_region_name,
+            f.result_id,
+            sr.risk_level,
+            f.follow_up_reason,
+            f.follow_up_status,
+            f.tracker_user_name,
+            f.planned_visit_count,
+            f.actual_visit_count,
+            f.start_date,
+            f.end_date,
+            f.last_visit_time,
+            f.create_time
+        from gc_follow_up f
+        left join gc_resident r on f.resident_id = r.resident_id
+        left join gc_region p on r.province_id = p.region_id
+        left join gc_region c on r.city_id = c.region_id
+        left join gc_region d on r.district_id = d.region_id
+        left join gc_region s on r.street_id = s.region_id
+        left join gc_region cm on r.community_id = cm.region_id
+        left join gc_screening_result sr on f.result_id = sr.result_id
+        <where>
+            <if test="residentId != null">
+                AND f.resident_id = #{residentId}
+            </if>
+            <if test="resultId != null">
+                AND f.result_id = #{resultId}
+            </if>
+            <if test="followUpReason != null and followUpReason != ''">
+                AND f.follow_up_reason = #{followUpReason}
+            </if>
+            <if test="followUpStatus != null and followUpStatus != ''">
+                AND f.follow_up_status = #{followUpStatus}
+            </if>
+            <if test="trackerUserId != null">
+                AND f.tracker_user_id = #{trackerUserId}
+            </if>
+        </where>
+        order by f.create_time desc
+    </select>
+
+    <!-- 查询随访对象详情 -->
+    <select id="selectFollowUpDetail" parameterType="Long" resultType="map">
+        select 
+            f.follow_up_id,
+            f.resident_id,
+            r.real_name as resident_name,
+            r.id_card_no,
+            r.gender,
+            r.age,
+            r.phone_number,
+            CONCAT(
+                IFNULL(p.region_name, ''),
+                IFNULL(c.region_name, ''),
+                IFNULL(d.region_name, ''),
+                IFNULL(s.region_name, ''),
+                IFNULL(cm.region_name, '')
+            ) as full_region_name,
+            f.result_id,
+            sr.screening_type,
+            sr.blood_result,
+            sr.risk_level,
+            sr.doctor_advice,
+            f.follow_up_reason,
+            f.follow_up_status,
+            f.tracker_user_id,
+            f.tracker_user_name,
+            f.planned_visit_count,
+            f.actual_visit_count,
+            f.start_date,
+            f.end_date,
+            f.last_visit_time,
+            f.follow_up_conclusion,
+            f.create_time,
+            f.remark
+        from gc_follow_up f
+        left join gc_resident r on f.resident_id = r.resident_id
+        left join gc_region p on r.province_id = p.region_id
+        left join gc_region c on r.city_id = c.region_id
+        left join gc_region d on r.district_id = d.region_id
+        left join gc_region s on r.street_id = s.region_id
+        left join gc_region cm on r.community_id = cm.region_id
+        left join gc_screening_result sr on f.result_id = sr.result_id
+        where f.follow_up_id = #{followUpId}
+    </select>
+
+    <!-- 新增随访对象 -->
+    <insert id="insertFollowUp" parameterType="com.javaxiaobear.module.gc.domain.entity.GcFollowUp"
+            useGeneratedKeys="true" keyProperty="followUpId">
+        insert into gc_follow_up
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">resident_id,</if>
+            <if test="resultId != null">result_id,</if>
+            <if test="followUpReason != null and followUpReason != ''">follow_up_reason,</if>
+            <if test="followUpStatus != null and followUpStatus != ''">follow_up_status,</if>
+            <if test="trackerUserId != null">tracker_user_id,</if>
+            <if test="trackerUserName != null and trackerUserName != ''">tracker_user_name,</if>
+            <if test="plannedVisitCount != null">planned_visit_count,</if>
+            <if test="actualVisitCount != null">actual_visit_count,</if>
+            <if test="startDate != null">start_date,</if>
+            <if test="endDate != null">end_date,</if>
+            <if test="lastVisitTime != null">last_visit_time,</if>
+            <if test="followUpConclusion != null and followUpConclusion != ''">follow_up_conclusion,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="residentId != null">#{residentId},</if>
+            <if test="resultId != null">#{resultId},</if>
+            <if test="followUpReason != null and followUpReason != ''">#{followUpReason},</if>
+            <if test="followUpStatus != null and followUpStatus != ''">#{followUpStatus},</if>
+            <if test="trackerUserId != null">#{trackerUserId},</if>
+            <if test="trackerUserName != null and trackerUserName != ''">#{trackerUserName},</if>
+            <if test="plannedVisitCount != null">#{plannedVisitCount},</if>
+            <if test="actualVisitCount != null">#{actualVisitCount},</if>
+            <if test="startDate != null">#{startDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            <if test="lastVisitTime != null">#{lastVisitTime},</if>
+            <if test="followUpConclusion != null and followUpConclusion != ''">#{followUpConclusion},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <!-- 修改随访对象 -->
+    <update id="updateFollowUp" parameterType="com.javaxiaobear.module.gc.domain.entity.GcFollowUp">
+        update gc_follow_up
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="followUpReason != null and followUpReason != ''">follow_up_reason = #{followUpReason},</if>
+            <if test="followUpStatus != null and followUpStatus != ''">follow_up_status = #{followUpStatus},</if>
+            <if test="trackerUserId != null">tracker_user_id = #{trackerUserId},</if>
+            <if test="trackerUserName != null and trackerUserName != ''">tracker_user_name = #{trackerUserName},</if>
+            <if test="plannedVisitCount != null">planned_visit_count = #{plannedVisitCount},</if>
+            <if test="actualVisitCount != null">actual_visit_count = #{actualVisitCount},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="lastVisitTime != null">last_visit_time = #{lastVisitTime},</if>
+            <if test="followUpConclusion != null and followUpConclusion != ''">follow_up_conclusion = #{followUpConclusion},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+        </trim>
+        where follow_up_id = #{followUpId}
+    </update>
+
+    <!-- 删除随访对象 -->
+    <delete id="deleteFollowUpById" parameterType="Long">
+        delete from gc_follow_up where follow_up_id = #{followUpId}
+    </delete>
+
+    <!-- 批量删除随访对象 -->
+    <delete id="deleteFollowUpByIds" parameterType="Long">
+        delete from gc_follow_up where follow_up_id in
+        <foreach collection="followUpIds" item="followUpId" open="(" separator="," close=")">
+            #{followUpId}
+        </foreach>
+    </delete>
+
+    <!-- 更新随访状态 -->
+    <update id="updateFollowUpStatus">
+        update gc_follow_up
+        set follow_up_status = #{followUpStatus},
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="followUpConclusion != null and followUpConclusion != ''">follow_up_conclusion = #{followUpConclusion},</if>
+            update_time = now()
+        where follow_up_id = #{followUpId}
+    </update>
+
+    <!-- 更新实际随访次数和最后随访时间 -->
+    <update id="updateVisitCount">
+        update gc_follow_up
+        set actual_visit_count = #{actualVisitCount},
+            last_visit_time = #{lastVisitTime},
+            update_time = now()
+        where follow_up_id = #{followUpId}
+    </update>
+
+    <!-- 根据筛查结果ID查询随访对象 -->
+    <select id="selectByResultId" parameterType="Long" resultMap="FollowUpResult">
+        select * from gc_follow_up where result_id = #{resultId}
+    </select>
+
+    <!-- 根据居民ID查询随访对象列表 -->
+    <select id="selectByResidentId" parameterType="Long" resultType="map">
+        select 
+            f.follow_up_id,
+            f.result_id,
+            sr.risk_level,
+            f.follow_up_reason,
+            f.follow_up_status,
+            f.tracker_user_name,
+            f.planned_visit_count,
+            f.actual_visit_count,
+            f.start_date,
+            f.end_date,
+            f.last_visit_time,
+            f.create_time
+        from gc_follow_up f
+        left join gc_screening_result sr on f.result_id = sr.result_id
+        where f.resident_id = #{residentId}
+        order by f.create_time desc
+    </select>
+
+    <!-- 统计随访对象数量 -->
+    <select id="countFollowUp" resultType="int">
+        select count(1)
+        from gc_follow_up f
+        left join gc_resident r on f.resident_id = r.resident_id
+        where 1=1
+        <if test="regionId != null and regionLevel != null">
+            <choose>
+                <when test="regionLevel == 3">
+                    and r.district_id = #{regionId}
+                </when>
+                <when test="regionLevel == 4">
+                    and r.street_id = #{regionId}
+                </when>
+                <when test="regionLevel == 5">
+                    and r.community_id = #{regionId}
+                </when>
+            </choose>
+        </if>
+        <if test="followUpStatus != null and followUpStatus != ''">
+            and f.follow_up_status = #{followUpStatus}
+        </if>
+    </select>
+
+    <!-- 查询待随访列表 -->
+    <select id="selectPendingFollowUps" resultType="map">
+        select 
+            f.follow_up_id,
+            f.resident_id,
+            r.real_name as resident_name,
+            r.phone_number,
+            f.follow_up_reason,
+            f.tracker_user_name,
+            f.planned_visit_count,
+            f.actual_visit_count,
+            f.start_date,
+            DATEDIFF(now(), f.start_date) as days_since_start
+        from gc_follow_up f
+        left join gc_resident r on f.resident_id = r.resident_id
+        where f.follow_up_status = '0'
+        order by f.start_date asc
+    </select>
+
+    <!-- 查询超期随访列表 -->
+    <select id="selectOverdueFollowUps" resultType="map">
+        select 
+            f.follow_up_id,
+            f.resident_id,
+            r.real_name as resident_name,
+            r.phone_number,
+            f.follow_up_reason,
+            f.tracker_user_name,
+            f.planned_visit_count,
+            f.actual_visit_count,
+            f.last_visit_time,
+            DATEDIFF(now(), f.last_visit_time) as days_since_last_visit
+        from gc_follow_up f
+        left join gc_resident r on f.resident_id = r.resident_id
+        where f.follow_up_status = '1'
+        and f.last_visit_time &lt; #{overdueDate}
+        order by f.last_visit_time asc
+    </select>
+</mapper>

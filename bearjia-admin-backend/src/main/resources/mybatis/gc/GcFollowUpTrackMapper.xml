@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaxiaobear.module.gc.mapper.GcFollowUpTrackMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="FollowUpTrackResult" type="com.javaxiaobear.module.gc.domain.entity.GcFollowUpTrack">
+        <id property="trackId" column="track_id"/>
+        <result property="followUpId" column="follow_up_id"/>
+        <result property="visitTime" column="visit_time"/>
+        <result property="visitMethod" column="visit_method"/>
+        <result property="visitContent" column="visit_content"/>
+        <result property="residentFeedback" column="resident_feedback"/>
+        <result property="healthStatus" column="health_status"/>
+        <result property="followDoctorAdvice" column="follow_doctor_advice"/>
+        <result property="nextVisitDate" column="next_visit_date"/>
+        <result property="visitorUserId" column="visitor_user_id"/>
+        <result property="visitorUserName" column="visitor_user_name"/>
+        <result property="attachmentUrls" column="attachment_urls"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <!-- 查询随访跟踪记录列表 -->
+    <select id="selectTrackList" parameterType="com.javaxiaobear.module.gc.domain.entity.GcFollowUpTrack"
+            resultType="map">
+        select 
+            t.track_id,
+            t.follow_up_id,
+            f.resident_id,
+            r.real_name as resident_name,
+            t.visit_time,
+            t.visit_method,
+            t.visit_content,
+            t.resident_feedback,
+            t.health_status,
+            t.follow_doctor_advice,
+            t.next_visit_date,
+            t.visitor_user_name,
+            t.create_time
+        from gc_follow_up_track t
+        left join gc_follow_up f on t.follow_up_id = f.follow_up_id
+        left join gc_resident r on f.resident_id = r.resident_id
+        <where>
+            <if test="followUpId != null">
+                AND t.follow_up_id = #{followUpId}
+            </if>
+            <if test="visitMethod != null and visitMethod != ''">
+                AND t.visit_method = #{visitMethod}
+            </if>
+            <if test="visitorUserId != null">
+                AND t.visitor_user_id = #{visitorUserId}
+            </if>
+        </where>
+        order by t.visit_time desc
+    </select>
+
+    <!-- 查询随访跟踪记录详情 -->
+    <select id="selectTrackDetail" parameterType="Long" resultType="map">
+        select 
+            t.track_id,
+            t.follow_up_id,
+            f.resident_id,
+            r.real_name as resident_name,
+            r.phone_number,
+            r.age,
+            r.gender,
+            t.visit_time,
+            t.visit_method,
+            t.visit_content,
+            t.resident_feedback,
+            t.health_status,
+            t.follow_doctor_advice,
+            t.next_visit_date,
+            t.visitor_user_id,
+            t.visitor_user_name,
+            t.attachment_urls,
+            t.create_time,
+            t.remark
+        from gc_follow_up_track t
+        left join gc_follow_up f on t.follow_up_id = f.follow_up_id
+        left join gc_resident r on f.resident_id = r.resident_id
+        where t.track_id = #{trackId}
+    </select>
+
+    <!-- 新增随访跟踪记录 -->
+    <insert id="insertTrack" parameterType="com.javaxiaobear.module.gc.domain.entity.GcFollowUpTrack"
+            useGeneratedKeys="true" keyProperty="trackId">
+        insert into gc_follow_up_track
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="followUpId != null">follow_up_id,</if>
+            <if test="visitTime != null">visit_time,</if>
+            <if test="visitMethod != null and visitMethod != ''">visit_method,</if>
+            <if test="visitContent != null and visitContent != ''">visit_content,</if>
+            <if test="residentFeedback != null and residentFeedback != ''">resident_feedback,</if>
+            <if test="healthStatus != null and healthStatus != ''">health_status,</if>
+            <if test="followDoctorAdvice != null">follow_doctor_advice,</if>
+            <if test="nextVisitDate != null">next_visit_date,</if>
+            <if test="visitorUserId != null">visitor_user_id,</if>
+            <if test="visitorUserName != null and visitorUserName != ''">visitor_user_name,</if>
+            <if test="attachmentUrls != null and attachmentUrls != ''">attachment_urls,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="followUpId != null">#{followUpId},</if>
+            <if test="visitTime != null">#{visitTime},</if>
+            <if test="visitMethod != null and visitMethod != ''">#{visitMethod},</if>
+            <if test="visitContent != null and visitContent != ''">#{visitContent},</if>
+            <if test="residentFeedback != null and residentFeedback != ''">#{residentFeedback},</if>
+            <if test="healthStatus != null and healthStatus != ''">#{healthStatus},</if>
+            <if test="followDoctorAdvice != null">#{followDoctorAdvice},</if>
+            <if test="nextVisitDate != null">#{nextVisitDate},</if>
+            <if test="visitorUserId != null">#{visitorUserId},</if>
+            <if test="visitorUserName != null and visitorUserName != ''">#{visitorUserName},</if>
+            <if test="attachmentUrls != null and attachmentUrls != ''">#{attachmentUrls},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+        </trim>
+    </insert>
+
+    <!-- 修改随访跟踪记录 -->
+    <update id="updateTrack" parameterType="com.javaxiaobear.module.gc.domain.entity.GcFollowUpTrack">
+        update gc_follow_up_track
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="visitTime != null">visit_time = #{visitTime},</if>
+            <if test="visitMethod != null and visitMethod != ''">visit_method = #{visitMethod},</if>
+            <if test="visitContent != null and visitContent != ''">visit_content = #{visitContent},</if>
+            <if test="residentFeedback != null and residentFeedback != ''">resident_feedback = #{residentFeedback},</if>
+            <if test="healthStatus != null and healthStatus != ''">health_status = #{healthStatus},</if>
+            <if test="followDoctorAdvice != null">follow_doctor_advice = #{followDoctorAdvice},</if>
+            <if test="nextVisitDate != null">next_visit_date = #{nextVisitDate},</if>
+            <if test="visitorUserId != null">visitor_user_id = #{visitorUserId},</if>
+            <if test="visitorUserName != null and visitorUserName != ''">visitor_user_name = #{visitorUserName},</if>
+            <if test="attachmentUrls != null and attachmentUrls != ''">attachment_urls = #{attachmentUrls},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null and remark != ''">remark = #{remark},</if>
+        </trim>
+        where track_id = #{trackId}
+    </update>
+
+    <!-- 删除随访跟踪记录 -->
+    <delete id="deleteTrackById" parameterType="Long">
+        delete from gc_follow_up_track where track_id = #{trackId}
+    </delete>
+
+    <!-- 批量删除随访跟踪记录 -->
+    <delete id="deleteTrackByIds" parameterType="Long">
+        delete from gc_follow_up_track where track_id in
+        <foreach collection="trackIds" item="trackId" open="(" separator="," close=")">
+            #{trackId}
+        </foreach>
+    </delete>
+
+    <!-- 根据随访ID查询跟踪记录列表 -->
+    <select id="selectByFollowUpId" parameterType="Long" resultType="map">
+        select 
+            track_id,
+            follow_up_id,
+            visit_time,
+            visit_method,
+            visit_content,
+            resident_feedback,
+            health_status,
+            follow_doctor_advice,
+            next_visit_date,
+            visitor_user_name,
+            attachment_urls,
+            create_time
+        from gc_follow_up_track
+        where follow_up_id = #{followUpId}
+        order by visit_time desc
+    </select>
+
+    <!-- 查询最近一次跟踪记录 -->
+    <select id="selectLatestByFollowUpId" parameterType="Long" resultMap="FollowUpTrackResult">
+        select * from gc_follow_up_track
+        where follow_up_id = #{followUpId}
+        order by visit_time desc
+        limit 1
+    </select>
+
+    <!-- 统计随访次数 -->
+    <select id="countByFollowUpId" parameterType="Long" resultType="int">
+        select count(1) from gc_follow_up_track where follow_up_id = #{followUpId}
+    </select>
+
+    <!-- 统计指定时间段内的随访次数 -->
+    <select id="countVisits" resultType="int">
+        select count(1)
+        from gc_follow_up_track t
+        left join gc_follow_up f on t.follow_up_id = f.follow_up_id
+        left join gc_resident r on f.resident_id = r.resident_id
+        where 1=1
+        <if test="regionId != null and regionLevel != null">
+            <choose>
+                <when test="regionLevel == 3">
+                    and r.district_id = #{regionId}
+                </when>
+                <when test="regionLevel == 4">
+                    and r.street_id = #{regionId}
+                </when>
+                <when test="regionLevel == 5">
+                    and r.community_id = #{regionId}
+                </when>
+            </choose>
+        </if>
+        <if test="startDate != null and endDate != null">
+            and t.visit_time between #{startDate} and #{endDate}
+        </if>
+    </select>
+</mapper>

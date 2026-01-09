@@ -1,10 +1,80 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "九江市肿瘤防治一体化协同体系",
 				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/resident/info",
+			"style": {
+				"navigationBarTitleText": "个人信息",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/resident/edit",
+			"style": {
+				"navigationBarTitleText": "填写信息",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/questionnaire/fill",
+			"style": {
+				"navigationBarTitleText": "问卷填写",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/appointment/create",
+			"style": {
+				"navigationBarTitleText": "采血预约",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/appointment/list",
+			"style": {
+				"navigationBarTitleText": "我的预约",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/result/index",
+			"style": {
+				"navigationBarTitleText": "筛查结果",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/surveyor/login",
+			"style": {
+				"navigationBarTitleText": "调查员登录",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/surveyor/assist",
+			"style": {
+				"navigationBarTitleText": "协助录入",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/surveyor/progress",
+			"style": {
+				"navigationBarTitleText": "任务进度",
+				"navigationBarBackgroundColor": "#FFFFFF"
 			}
 		},
 		{
@@ -31,8 +101,40 @@
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
+		"navigationBarTitleText": "胃癌筛查",
+		"navigationBarBackgroundColor": "#FFFFFF",
 		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#7A7E83",
+		"selectedColor": "#3cc51f",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/tabbar/home.png",
+				"selectedIconPath": "static/tabbar/home-active.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/appointment/list",
+				"iconPath": "static/tabbar/appointment.png",
+				"selectedIconPath": "static/tabbar/appointment-active.png",
+				"text": "我的预约"
+			},
+			{
+				"pagePath": "pages/result/index",
+				"iconPath": "static/tabbar/result.png",
+				"selectedIconPath": "static/tabbar/result-active.png",
+				"text": "筛查结果"
+			},
+			{
+				"pagePath": "pages/resident/info",
+				"iconPath": "static/tabbar/user.png",
+				"selectedIconPath": "static/tabbar/user-active.png",
+				"text": "我的"
+			}
+		]
 	}
 }
